@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Esto arregla los iconos para que se centren bien */
+.material-symbols-outlined {
+  vertical-align: middle;
+  line-height: 1;
+  vertical-align: middle;
+}
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+}
+
+/* Para asegurar que las fuentes se apliquen */
+h1,
+h2,
+h3 {
+  font-family: 'Manrope', sans-serif;
+}

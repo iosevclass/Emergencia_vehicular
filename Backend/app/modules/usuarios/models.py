@@ -1,0 +1,62 @@
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, Enum, Boolean
+from sqlalchemy.orm import relationship
+from app.core.database import Base
+import enum
+
+class UserRole(enum.Enum):
+    ADMIN_TALLER = "admin_taller"
+    CLIENTE = "cliente"
+
+class Usuario(Base):
+    __tablename__ = "usuarios"
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, unique=True, index=True, nullable=False)
+    password_hash = Column(String, nullable=False)
+    rol = Column(Enum(UserRole), nullable=False)
+    
+    tipo_perfil = Column(String(50))
+    
+    __mapper_args__ = {
+        "polymorphic_identity": "usuario",
+        "polymorphic_on": tipo_perfil,
+    }
+
+class Cliente(Usuario):
+    __tablename__ = "perfil_clientes"
+    id = Column(Integer, ForeignKey("usuarios.id"), primary_key=True)
+    nombre = Column(String(100))
+    telefono = Column(String(20))
+    
+    #vehiculos = relationship("Vehiculo", back_populates="dueno")
+    __mapper_args__ = {"polymorphic_identity": "cliente"}
+
+class Taller(Usuario):
+    __tablename__ = "perfil_talleres"
+    id = Column(Integer, ForeignKey("usuarios.id"), primary_key=True)
+    
+    # Campos que coinciden con el formulario y tu diagrama
+    nombre_taller = Column(String(150), nullable=False)
+    nit = Column(String(50), nullable=True) # Agregado
+    ciudad = Column(String(100), nullable=True) # Agregado
+    direccion = Column(String(255), nullable=True) # Agregado
+    foto_perfil = Column(String(255), nullable=True) # URL de la foto (Opcional)
+    
+    # Para geolocalización (lat/lng)
+    latitud = Column(Float, nullable=True)
+    longitud = Column(Float, nullable=True)
+    
+    personal = relationship("PersonalTaller", back_populates="taller")
+    __mapper_args__ = {"polymorphic_identity": "taller"}
+    
+class PersonalTaller(Base):
+    """ Empleados del taller: mecánicos, electricistas, admins, etc. """
+    __tablename__ = "personal_taller"
+    
+    id = Column(Integer, primary_key=True)
+    nombre_completo = Column(String(100))
+    cargo = Column(String(50))  # Aquí guardas: "Electricista", "Mecánico", "Ventas"
+    especialidad = Column(String(100), nullable=True) 
+    activo = Column(Boolean, default=True)
+    
+    taller_id = Column(Integer, ForeignKey("perfil_talleres.id"))
+    taller = relationship("Taller", back_populates="personal")

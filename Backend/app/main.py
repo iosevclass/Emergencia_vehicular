@@ -1,0 +1,21 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from app.modules.usuarios.routes import router as usuarios_router
+# Importar otros módulos cuando los tengas:
+# from app.modules.emergencias.routes import router as emergencias_router
+app = FastAPI(title="Emergencia Vehicular API")
+# Configurar quién tiene permiso de hablar con el servidor
+origins = [
+    "http://localhost:4200",  # Tu app de Angular
+    "http://127.0.0.1:4200",
+]
+app.add_middleware(
+CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],  # Permite GET, POST, OPTIONS, etc.
+    allow_headers=["*"],  # Permite todos los encabezados
+)
+
+# Registramos el módulo de usuarios
+app.include_router(usuarios_router)
