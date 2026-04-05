@@ -15,3 +15,40 @@ class TallerCreate(BaseModel):
     
     class Config:
         from_attributes = True
+
+
+
+'''
+Frontend → POST /login con LoginRequest
+                    ↓
+Backend procesa, crea token
+                    ↓
+Backend → Responde con TokenResponse (el token JWT)
+                    ↓
+Frontend guarda en localStorage
+                    ↓
+Frontend → GET /me con el token en header
+                    ↓
+Backend → Responde con UsuarioResponse (datos del usuario)
+'''
+#Frontend envia datos JSON Post/login con loginRequest
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+#Backend responde con TokenResponse(el token Jwt)
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+#Backend responde con UsuarioResponse(datos del usuario)
+class UsuarioResponse(BaseModel):
+    id: int
+    email: EmailStr
+    rol: str
+    tipo_perfil: str
+    
+    class Config:
+        from_attributes = True
+
