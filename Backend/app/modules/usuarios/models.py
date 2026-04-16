@@ -26,7 +26,9 @@ class Cliente(Usuario):
     id = Column(Integer, ForeignKey("usuarios.id"), primary_key=True)
     nombre = Column(String(100))
     telefono = Column(String(20))
-    
+    ci = Column(String(20), nullable=True) 
+    fecha_nacimiento = Column(String(50), nullable=True)
+    foto_perfil = Column(String(255), nullable=True)
     #vehiculos = relationship("Vehiculo", back_populates="dueno")
     __mapper_args__ = {"polymorphic_identity": "cliente"}
 

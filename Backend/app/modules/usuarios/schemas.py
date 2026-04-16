@@ -16,6 +16,15 @@ class TallerCreate(BaseModel):
     class Config:
         from_attributes = True
 
+class ClienteCreate(BaseModel):
+    email: EmailStr
+    password: str
+    nombre: str
+    telefono: str
+    ci: str
+    fecha_nacimiento: Optional[str] = None
+    class Config:
+        from_attributes = True
 
 
 '''

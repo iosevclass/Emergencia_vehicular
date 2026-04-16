@@ -15,4 +15,9 @@ dist/
 # Varios
 .DS_Store
 Thumbs.db
-
+.env
+.dart_tool/
+build/
+*.pyc
+__pycache__/
+venv/

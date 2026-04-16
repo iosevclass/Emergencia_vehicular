@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 
 from app.core.database import get_db
-from .models import Taller, UserRole
-from .schemas import TallerCreate
+from .models import Taller, UserRole, Cliente
+from .schemas import TallerCreate, ClienteCreate
 
 router = APIRouter(prefix="/usuarios", tags=["Usuarios"])
 #pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto") #como que este no es necesario
@@ -113,7 +113,27 @@ def read_users_me(current_user: Usuario = Depends(get_current_user)):
     """
     return current_user
 
+@router.post("/register-cliente", status_code=status.HTTP_201_CREATED)
+def register_cliente(obj_in: ClienteCreate, db: Session = Depends(get_db)):
+    # Verificar si ya existe
+    if db.query(Usuario).filter(Usuario.email == obj_in.email).first():
+        raise HTTPException(status_code=400, detail="El email ya existe")
 
+    nuevo_cliente = Cliente(
+        email=obj_in.email,
+        password_hash=pwd_context.hash(obj_in.password),
+        rol=UserRole.CLIENTE,
+        tipo_perfil="cliente",
+        nombre=obj_in.nombre,
+        telefono=obj_in.telefono,
+        ci=obj_in.ci,
+        fecha_nacimiento=obj_in.fecha_nacimiento,
+    )
+    
+    db.add(nuevo_cliente)
+    db.commit()
+    db.refresh(nuevo_cliente)
+    return {"message": "Cliente registrado", "id": nuevo_cliente.id}
 
 '''┌─ IMPORTS (todo arriba)
 ├─ router = APIRouter(...)
