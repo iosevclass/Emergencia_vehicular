@@ -4,6 +4,9 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../../../../shared/widgets/glass_container.dart';
 import 'register_screen.dart';
+import 'dart:convert'; // Para jsonEncode y jsonDecode
+import 'package:http/http.dart' as http; // Para las peticiones
+import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Para guardar el token
 
 class LoginScreen extends StatefulWidget {
   // Antes era StatelessWidget
@@ -16,20 +19,61 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final _storage = const FlutterSecureStorage(); // Instancia para guardar datos
 
-  // Esta función es la que hará la magia
-  void _handleLogin() {
+  // Cambiamos a Future<void> porque ahora es una operación que toma tiempo (asíncrona)
+  Future<void> _handleLogin() async {
     final email = _emailController.text;
     final password = _passwordController.text;
 
-    // Por ahora, validación local para que pruebes el salto al Home
-    if (email.isNotEmpty && password.isNotEmpty) {
-      // Navegación al Home (Asumiendo que tienes una ruta llamada '/home' o la clase HomeScreen)
-      Navigator.pushReplacementNamed(context, '/home');
-    } else {
+    if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor, ingresa tus credenciales')),
       );
+      return;
+    }
+
+    try {
+      // 1. Petición al Backend (Asegúrate de usar tu IP local o 10.0.2.2 para el emulador)
+      final response = await http.post(
+        Uri.parse(
+          'http://192.168.1.10:8000/usuarios/login',
+        ), // Ajusta la URL según tu config
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'password': password}),
+      );
+
+      if (response.statusCode == 200) {
+        // 2. Decodificar la respuesta exitosa
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        final String token = data['access_token'];
+
+        // 3. GUARDAR EL TOKEN EN EL DISPOSITIVO
+        // Esto es lo que luego leerá la HomeScreen
+        await _storage.write(key: 'jwt_token', value: token);
+
+        // 4. Ir al Home
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/home');
+        }
+      } else {
+        // Manejo de errores (401 no autorizado, etc.)
+        final error = jsonDecode(response.body);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(error['detail'] ?? 'Error al iniciar sesión'),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // Error de conexión (Backend apagado, etc.)
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error de conexión: $e')));
+      }
     }
   }
 

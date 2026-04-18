@@ -6,7 +6,7 @@ import 'src/features/auth/presentation/pages/login_screen.dart';
 
 // 1. IMPORTA TU HOME REAL AQUÍ
 // Verifica que la ruta sea exactamente esta:
-import 'src/features/home/presentation/home_screen.dart';
+import 'package:mobile/src/features/home/presentation/pages/home_screen.dart';
 import 'src/features/messages/presentation/pages/messages_screen.dart'; // Importa la pantalla
 import 'src/features/workshops/presentation/pages/workshops_screen.dart';
 
