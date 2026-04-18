@@ -192,7 +192,7 @@ class WorkshopsScreen extends StatelessWidget {
               items: const [
                 BottomNavigationBarItem(
                   icon: Icon(Icons.emergency_share),
-                  label: 'Emergency',
+                  label: 'General',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.car_repair),

@@ -97,12 +97,26 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
             detail="Email o contraseña incorrectos",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    # 2. Lógica para extraer el NOMBRE real según el perfil
+    nombre_usuario = "Usuario"
     
-    # Crea el token con datos del usuario
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    if user.tipo_perfil == "cliente":
+        # Buscamos en la tabla de clientes
+        cliente = db.query(Cliente).filter(Cliente.id == user.id).first()
+        nombre_usuario = cliente.nombre if cliente else "Cliente"
+    elif user.tipo_perfil == "taller":
+        # Buscamos en la tabla de talleres
+        taller = db.query(Taller).filter(Taller.id == user.id).first()
+        nombre_usuario = taller.nombre_taller if taller else "Taller"
     access_token = create_access_token(
-        data={"sub": str(user.id), "email": user.email, "rol": user.rol.value}
+        data={
+            "sub": str(user.id), 
+            "email": user.email, 
+            "rol": user.rol.value,
+            "name": nombre_usuario  # <--- AGREGAMOS ESTO
+        }
     )
+    
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.get("/me", response_model=UsuarioResponse)
