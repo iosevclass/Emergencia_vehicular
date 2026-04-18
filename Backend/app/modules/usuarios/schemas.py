@@ -61,3 +61,34 @@ class UsuarioResponse(BaseModel):
     class Config:
         from_attributes = True
 
+# --- Esquemas para PersonalTaller ---
+
+class PersonalTallerCreate(BaseModel):
+    email: EmailStr
+    password: str
+    nombre_completo: str
+    cargo: str  # E.g., "Mecánico", "Electricista"
+    especialidad: Optional[str] = None
+    foto_perfil: Optional[str] = None
+
+class PersonalTallerUpdate(BaseModel):
+    nombre_completo: Optional[str] = None
+    cargo: Optional[str] = None
+    especialidad: Optional[str] = None
+    foto_perfil: Optional[str] = None
+    password: Optional[str] = None
+    activo: Optional[bool] = None
+
+class PersonalTallerResponse(BaseModel):
+    id: int
+    email: EmailStr
+    nombre_completo: str
+    cargo: str
+    especialidad: Optional[str] = None
+    foto_perfil: Optional[str] = None
+    activo: bool
+    taller_id: int
+    
+    class Config:
+        from_attributes = True
+
