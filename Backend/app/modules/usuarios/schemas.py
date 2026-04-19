@@ -18,7 +18,7 @@ class TallerCreate(BaseModel):
     # frontend aún no implementa GPS o Cloudinary
     latitud: Optional[float] = 0.0
     longitud: Optional[float] = 0.0
-    foto_perfil: Optional[str] = None 
+    foto_perfil: Optional[str] 
 
     class Config:
         from_attributes = True

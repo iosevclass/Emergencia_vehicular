@@ -27,6 +27,7 @@ def create_taller_service(db: Session, obj_in: TallerCreate):
         rol=UserRole.ADMIN_TALLER,
         tipo_perfil="taller",
         nombre_taller=obj_in.nombre_taller,
+        foto_perfil=obj_in.foto_perfil,
         nit=obj_in.nit,
         ciudad=obj_in.ciudad,
         direccion=obj_in.direccion,

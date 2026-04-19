@@ -24,6 +24,7 @@ from .schemas import LoginRequest, TokenResponse, UsuarioResponse, PersonalTalle
 from .services import authenticate_user, create_personal_taller, get_personal_by_taller, update_personal_taller, delete_personal_taller, get_personal_by_id, create_taller_service
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing import List
+from pydantic import BaseModel
 
 
 #es un descriptor que le dice a FastAPI donde pedir el token en este caso el endpoint /login
@@ -284,3 +285,64 @@ def borrar_personal(
     return None
 
 
+'''PARA CLOUDINARY, CREARÉ UN NUEVO SERVICIO EN cloudinary_service.py PARA MANTENER EL CÓDIGOS LIMPIO Y ORGANIZADO.
+y creare en aca routes su end endpoint para subir imagenes y otro para eliminar'''
+
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, status
+from .cloudinary_service import CloudinaryService
+
+@router.post("/upload-image", status_code=status.HTTP_201_CREATED)
+async def upload_image_view(
+    file: UploadFile = File(...), 
+    folder: str = Form("emergencia_vehicular/perfiles")
+):
+    """
+    Endpoint para subir imágenes a Cloudinary.
+    Equivalente a tu UploadImageView de Django.
+    """
+    # 1. Validar que sea una imagen
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail="El archivo enviado no es una imagen válida."
+        )
+    
+    try:
+        # 2. Llamar al servicio asíncrono que creamos
+        data = await CloudinaryService.upload_image(file, folder=folder)
+        return data
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail=str(exc)
+        )
+    except Exception as e:
+        print(f"Error interno: {e}") # Para debug en consola
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+            detail="Error al procesar la imagen en el servidor."
+        )
+    
+class DeleteImageRequest(BaseModel):
+    public_id: str
+
+@router.post("/delete-image")
+async def delete_image_view(request: DeleteImageRequest):
+    """
+    Endpoint para eliminar imágenes de Cloudinary.
+    """
+    try:
+        result = await CloudinaryService.delete_image(request.public_id)
+        
+        # Cloudinary devuelve {'result': 'ok'} si se borró correctamente
+        if result.get("result") == "ok":
+            return {"message": "Imagen eliminada correctamente"}
+        else:
+            return {"message": "La imagen no existía o ya fue eliminada", "details": result}
+            
+    except Exception as e:
+        print(f"Error al borrar imagen: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="No se pudo eliminar la imagen del servidor"
+        )
