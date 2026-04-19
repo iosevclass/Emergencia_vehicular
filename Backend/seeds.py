@@ -3,6 +3,9 @@ from app.modules.usuarios.models import Taller, Cliente, PersonalTaller, UserRol
 from sqlalchemy.orm import Session
 from app.core.security import get_password_hash # Importamos la función de hashing
 
+from app.modules.vehiculos.models import Vehiculo
+from app.modules.emergencias.models import Emergencia, DetalleEmergencia, Mensajeria, PrioridadEmergencia, EstadoEmergencia
+
 def seed_database():
     db: Session = SessionLocal()
     try:
@@ -86,7 +89,56 @@ def seed_database():
         db.refresh(personal)
         print(f"✅ Personal Seeded: {personal.nombre_completo} (ID: {personal.id})")
 
-        print("\n🚀 ¡Base de datos poblada con éxito para pruebas locales!")
+        print("\n🚀 ¡Base de datos poblada usuarios con éxito para pruebas locales!")
+
+        
+        # 5. Crear un Vehículo para el Cliente
+        vehiculo = Vehiculo(
+            placa="2024-ABC",
+            marca="Toyota",
+            modelo="Hilux",
+            color="Blanco",
+            anio=2022,
+            cliente_id=cliente.id # Relación con el cliente creado arriba
+        )
+        db.add(vehiculo)
+        db.commit()
+        db.refresh(vehiculo)
+        print(f"✅ Vehículo Seeded: {vehiculo.placa} (Dueño: {cliente.nombre})")
+
+        # 6. Crear una Emergencia
+        emergencia = Emergencia(
+            ubicacion_real="-17.78629,-63.18170",
+            descripcion="El motor se sobrecalentó y sale humo.",
+            prioridad=PrioridadEmergencia.alta,
+            estado=EstadoEmergencia.atendiendo,
+            id_vehiculo=vehiculo.id,
+            id_personal=personal.id # Asignamos al mecánico Pedro
+        )
+        db.add(emergencia)
+        db.commit()
+        db.refresh(emergencia)
+        print(f"✅ Emergencia Seeded: Nro {emergencia.nro} (Asignada a: {personal.nombre_completo})")
+
+        # 7. Crear el Detalle de la Emergencia (Seguimiento GPS)
+        detalle = DetalleEmergencia(
+            nro_emergencia=emergencia.nro,
+            tiempo_llegada_estimado="12 minutos",
+            ubicacion_personal_real="-17.78400,-63.18000"
+        )
+        db.add(detalle)
+        
+        # 8. Crear un mensaje de prueba (Chat)
+        mensaje = Mensajeria(
+            nro_emergencia=emergencia.nro,
+            id_remitente=taller.id, # El taller envía el mensaje
+            mensaje="Ya enviamos a Pedro para ayudarte, Juan.",
+            leido=False
+        )
+        db.add(mensaje)
+
+        db.commit()
+        print("✅ Flujo de Emergencia y Mensajería Seeded correctamente.")
 
     except Exception as e:
         db.rollback()

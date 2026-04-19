@@ -30,7 +30,7 @@ class Cliente(Usuario):
     ci = Column(String(20), nullable=True) 
     fecha_nacimiento = Column(String(50), nullable=True)
     foto_perfil = Column(String(255), nullable=True)
-    #vehiculos = relationship("Vehiculo", back_populates="dueno")
+    vehiculos = relationship("app.modules.vehiculos.models.Vehiculo", back_populates="dueno")
     __mapper_args__ = {"polymorphic_identity": "cliente"}
 
 class Taller(Usuario):
