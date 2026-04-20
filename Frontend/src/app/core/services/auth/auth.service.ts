@@ -1,11 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { tap } from 'rxjs';
-
+import { environment } from '../../../../environments/environment';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:8000/usuarios';
+  private apiUrl = `${environment.apiUrl}/usuarios`;
 
   // Usamos un 'signal' para saber en todo momento si hay alguien logueado
   currentUser = signal<any>(null);
