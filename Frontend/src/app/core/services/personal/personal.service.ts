@@ -6,7 +6,7 @@ import { environment  } from 'src/environments/environment';
 @Injectable({ providedIn: 'root' })
 export class PersonalService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}`; 
+  private apiUrl = `${environment.apiUrl}/usuarios/personal`; // Ajusta a tu URL de FastAPI
 
   // Función para obtener el token del localStorage
   private getHeaders() {
