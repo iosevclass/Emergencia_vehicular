@@ -1,8 +1,8 @@
 """genesis_completo
 
-Revision ID: 7570a509d73f
+Revision ID: 403fe125fd86
 Revises: 
-Create Date: 2026-04-19 15:33:14.856689
+Create Date: 2026-04-20 18:02:22.737056
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '7570a509d73f'
+revision: str = '403fe125fd86'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None

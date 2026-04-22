@@ -20,14 +20,12 @@ from app.core.config import settings
 from app.core.security import create_access_token, verify_password
 
 from .models import Usuario
-from .schemas import LoginRequest, TokenResponse, UsuarioResponse, PersonalTallerCreate, PersonalTallerUpdate, PersonalTallerResponse
+from .schemas import LoginRequest, TokenResponse, UsuarioResponse, PersonalTallerCreate, PersonalTallerUpdate, PersonalTallerResponse, TallerResponse
 from .services import authenticate_user, create_personal_taller, get_personal_by_taller, update_personal_taller, delete_personal_taller, get_personal_by_id, create_taller_service
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing import List
 from pydantic import BaseModel
 
-from typing import List
-from .schemas import TallerResponse
 
 #es un descriptor que le dice a FastAPI donde pedir el token en este caso el endpoint /login
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="usuarios/login")
@@ -212,7 +210,6 @@ def register_cliente(obj_in: ClienteCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(nuevo_cliente)
     return {"message": "Cliente registrado", "id": nuevo_cliente.id}
-
 
 @router.get("/lista-talleres", response_model=List[TallerResponse])
 def get_all_talleres(db: Session = Depends(get_db)):

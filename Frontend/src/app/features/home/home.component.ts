@@ -6,25 +6,33 @@ import { PersonalService } from '../../core/services/personal/personal.service';
 import { PersonalTaller } from '../../core/models/personal.model';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MediaService } from '../../core/services/media.service';
+import {
+  EmergenciaWsService,
+  EmergenciaNotificacion,
+} from '../../core/services/emergencia-ws.service';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule,ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css']
+  styleUrls: ['./home.component.css'],
 })
 export class HomeComponent implements OnInit {
   // Inyección de servicios necesarios
   private authService = inject(AuthService);
   private personalService = inject(PersonalService);
-  private router = inject(Router);  
+  private router = inject(Router);
   private fb = inject(FormBuilder);
   private mediaService = inject(MediaService);
+  private emergenciaWs = inject(EmergenciaWsService);
+  private http = inject(HttpClient);
   // Signals para reactividad en la UI
   // Se usan con () en el HTML: listaPersonal()
   listaPersonal = signal<PersonalTaller[]>([]);
-  
+  emergenciasPendientes = signal<EmergenciaNotificacion['data'][]>([]);
+
   // Variables de estado simples
   // Se usan directo en el HTML: {{ tallerNombre }}
   tallerNombre: string = 'Taller';
@@ -33,7 +41,7 @@ export class HomeComponent implements OnInit {
 
   // Formulario
   personalForm: FormGroup;
- //para la vista previa de la foto de perfil en el formulario de registro de personal
+  //para la vista previa de la foto de perfil en el formulario de registro de personal
   fotoPreview = signal<string | null>(null);
   subiendoFoto = signal<boolean>(false);
   constructor() {
@@ -43,15 +51,24 @@ export class HomeComponent implements OnInit {
       nombre_completo: ['', Validators.required],
       cargo: ['Mecánico', Validators.required],
       especialidad: [''],
-      foto_perfil: ['']
+      foto_perfil: [''],
     });
   }
   ngOnInit() {
     // 1. Cargar datos del perfil desde localStorage
     this.cargarDatosPerfil();
-    
+
     // 2. Cargar lista de mecánicos desde el backend
     this.cargarPersonal();
+
+    // 3. Conectar a WebSockets de emergencias
+    this.emergenciaWs.conectar();
+    this.emergenciaWs.emergencias$.subscribe((msg) => {
+      if (msg.type === 'NEW_EMERGENCY') {
+        this.emergenciasPendientes.update((emergencias) => [msg.data, ...emergencias]);
+        this.serviciosPendientes = this.emergenciasPendientes().length;
+      }
+    });
   }
 
   private cargarDatosPerfil() {
@@ -70,7 +87,7 @@ export class HomeComponent implements OnInit {
     const file: File = event.target.files[0];
     if (file) {
       this.subiendoFoto.set(true);
-      
+
       // 1. Mostramos previsualización local inmediata
       const reader = new FileReader();
       reader.onload = () => this.fotoPreview.set(reader.result as string);
@@ -88,7 +105,7 @@ export class HomeComponent implements OnInit {
           console.error('Error al subir imagen:', err);
           this.subiendoFoto.set(false);
           alert('No se pudo subir la imagen, intenta de nuevo.');
-        }
+        },
       });
     }
   }
@@ -104,7 +121,7 @@ export class HomeComponent implements OnInit {
         if (err.status === 401) {
           this.logout();
         }
-      }
+      },
     });
   }
   guardarPersonal() {
@@ -112,28 +129,74 @@ export class HomeComponent implements OnInit {
       this.personalService.registrarPersonal(this.personalForm.value).subscribe({
         next: () => {
           this.cargarPersonal(); // Refresca la lista de las tarjetas
-          this.cerrarModal();    // Cierra el modal y limpia el form
+          this.cerrarModal(); // Cierra el modal y limpia el form
         },
         error: (err) => {
           alert(err.error.detail || 'Error al registrar al empleado');
-        }
+        },
       });
     }
   }
 
-  abrirModal() { this.mostrarModal.set(true); }
-  cerrarModal() { 
-    this.mostrarModal.set(false); 
-    this.personalForm.reset({ cargo: 'Mecánico' }); 
+  abrirModal() {
+    this.mostrarModal.set(true);
+  }
+  cerrarModal() {
+    this.mostrarModal.set(false);
+    this.personalForm.reset({ cargo: 'Mecánico' });
     this.fotoPreview.set(null);
   }
 
   logout() {
     // Limpieza de seguridad
+    this.emergenciaWs.desconectar();
     localStorage.removeItem('access_token');
     localStorage.removeItem('user_data');
-    
+
     // Redirección al login
     this.router.navigate(['/login']);
+  }
+
+  aceptarEmergencia(nro: number) {
+    const lista = this.listaPersonal();
+    const personalId = lista.length > 0 ? lista[0].id : null;
+
+    if (!personalId) {
+      alert('Necesitas registrar al menos un personal.');
+      return;
+    }
+
+    // 1. Verificar si el token existe
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      alert('Sesión expirada. Por favor, vuelve a iniciar sesión.');
+      // Aquí podrías redirigir al login: this.router.navigate(['/login']);
+      return;
+    }
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`, // Asegúrate de que no falte el espacio después de Bearer
+    });
+
+    this.http
+      .post(
+        `http://127.0.0.1:8000/emergencias/${nro}/aceptar`,
+        { id_personal: personalId },
+        { headers: headers },
+      )
+      .subscribe({
+        next: () => {
+          alert('¡Emergencia Aceptada!');
+          // ... resto de tu lógica de actualización
+        },
+        error: (err) => {
+          if (err.status === 401) {
+            alert('Error 401: No tienes permiso o tu sesión expiró.');
+          } else {
+            alert('Error al aceptar la emergencia');
+          }
+          console.error('Detalle del error:', err);
+        },
+      });
   }
 }

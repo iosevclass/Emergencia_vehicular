@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../domian/workshop_mode.dart';
+import '../../domian/workshop_model.dart';
 import '../../../../core/network/workshop_service.dart';
 
 class WorkshopsScreen extends StatefulWidget {

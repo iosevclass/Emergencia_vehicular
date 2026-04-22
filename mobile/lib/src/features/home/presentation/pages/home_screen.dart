@@ -4,6 +4,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // NUEVO
 import 'package:jwt_decoder/jwt_decoder.dart'; // NUEVO
 import '../../../../core/theme/app_colors.dart';
 import '../widgets/Emergency_bubble.dart';
+// Ajusta la cantidad de "../" dependiendo de qué tan profundo esté tu HomeScreen
+import '../../../vehiculos/presentation/pages/agregar_vehiculo_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -49,6 +51,66 @@ class _HomeScreenState extends State<HomeScreen> {
             backgroundColor: AppColors.surface,
             extendBodyBehindAppBar: true,
             extendBody: true,
+            drawer: Drawer(
+              backgroundColor: AppColors.surface,
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  DrawerHeader(
+                    decoration: BoxDecoration(color: AppColors.primary),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        const CircleAvatar(
+                          radius: 30,
+                          backgroundColor: Colors.white,
+                          child: Icon(
+                            Icons.person,
+                            size: 35,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          userName, // Usamos la variable que ya tienes
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'Manrope',
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ListTile(
+                    leading: Icon(
+                      Icons.directions_car,
+                      color: AppColors.primary,
+                    ),
+                    title: const Text(
+                      'Agregar Vehículo',
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.pop(context); // Cierra el menú lateral primero
+                      // Navegamos a la nueva pantalla
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AgregarVehiculoScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  // Puedes agregar más opciones aquí después...
+                ],
+              ),
+            ),
             appBar: PreferredSize(
               preferredSize: const Size.fromHeight(kToolbarHeight),
               child: ClipRect(
@@ -60,10 +122,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     scrolledUnderElevation: 0,
                     title: Row(
                       children: [
-                        IconButton(
-                          icon: const Icon(Icons.menu, color: Colors.black54),
-                          onPressed: () {},
-                        ),
+                        //Builder(
+                        //builder: (context) {
+                        // return IconButton(
+                        //   icon: const Icon(
+                        //     Icons.menu,
+                        //     color: Colors.black54,
+                        //   ),
+                        //   onPressed: () {
+                        //     // Abre el Drawer
+                        //     Scaffold.of(context).openDrawer();
+                        //   },
+                        // );
+                        //},
+                        //),
                         const SizedBox(width: 8),
                         const Text(
                           'Kinetic Trust',
@@ -326,7 +398,10 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          const EmergencyBubble(),
+          const EmergencyBubble(
+            idCliente: 1, // Esto lo deberías traer de tu login/estado
+            idVehiculoSeleccionado: 1, // El ID del carro actual
+          ),
         ],
       ),
     );

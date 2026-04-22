@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.modules.usuarios.routes import router as usuarios_router
-# Importar otros módulos cuando los tengas:
-# from app.modules.emergencias.routes import router as emergencias_router
+# Importar otros módulos cuando los tengas: 
+from app.modules.emergencias.routes import router as emergencias_router
 
 from app.modules.usuarios import models as usuarios_models
 from app.modules.vehiculos import models as vehiculos_models
@@ -10,6 +10,9 @@ from app.modules.emergencias import models as emergencias_models
 # ---------------------------------------
 
 from app.modules.usuarios.routes import router as usuarios_router
+from app.modules.vehiculos.routes import router as vehiculos_router
+# from app.modules.emergencias.routes import router as emergencias_router
+
 app = FastAPI(title="Emergencia Vehicular API")
 # Configurar quién tiene permiso de hablar con el servidor
 origins = [
@@ -26,3 +29,5 @@ CORSMiddleware,
 
 # Registramos el módulo de usuarios
 app.include_router(usuarios_router)
+app.include_router(vehiculos_router)
+app.include_router(emergencias_router)

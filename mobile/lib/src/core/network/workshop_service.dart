@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../../features/workshops/domian/workshop_mode.dart';
+import '../../features/workshops/domian/workshop_model.dart';
 
 class WorkshopService {
   // OJO: Si pruebas en el emulador de Android, usa 10.0.2.2 en lugar de localhost

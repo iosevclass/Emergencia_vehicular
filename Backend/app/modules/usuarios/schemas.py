@@ -109,3 +109,14 @@ class PersonalTallerResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class TallerResponse(BaseModel):
+    id: int
+    email: EmailStr
+    nombre_taller: str
+    ciudad: str
+    direccion: str
+    foto_perfil: Optional[str] = None
+    
+    class Config:
+        from_attributes = True
+
