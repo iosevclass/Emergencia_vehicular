@@ -32,10 +32,16 @@ export class HomeComponent implements OnInit {
   // Se usan con () en el HTML: listaPersonal()
   listaPersonal = signal<PersonalTaller[]>([]);
   emergenciasPendientes = signal<EmergenciaNotificacion['data'][]>([]);
-
+  // --- NUEVOS SIGNALS PARA EL DETALLE DE EMERGENCIA ---
+  mostrarModalDetalle = signal<boolean>(false);
+  emergenciaSeleccionada = signal<any | null>(null); // Reemplaza 'any' por tu interfaz si la tienes
+  personalSeleccionadoId = signal<number | null>(null);
+  distanciaCalculada = signal<string | null>(null);
   // Variables de estado simples
   // Se usan directo en el HTML: {{ tallerNombre }}
   tallerNombre: string = 'Taller';
+  tallerLat: number = 0; // Coordenadas de tu taller
+  tallerLon: number = 0;
   serviciosPendientes: number = 0;
   mostrarModal = signal<boolean>(false);
 
@@ -76,8 +82,10 @@ export class HomeComponent implements OnInit {
     if (userDataJson) {
       try {
         const userData = JSON.parse(userDataJson);
-        // Extraemos el nombre que guardamos en el login
         this.tallerNombre = userData.nombre || 'Taller';
+        // Asignamos las coordenadas del taller si existen en tu JSON
+        this.tallerLat = userData.latitud || -17.7833; // Ejemplo: Santa Cruz
+        this.tallerLon = userData.longitud || -63.1821;
       } catch (error) {
         console.error('Error al parsear user_data:', error);
       }
@@ -156,38 +164,74 @@ export class HomeComponent implements OnInit {
     // Redirección al login
     this.router.navigate(['/login']);
   }
+  abrirDetalleEmergencia(emergencia: any) {
+    this.emergenciaSeleccionada.set(emergencia);
+    this.personalSeleccionadoId.set(null); // Reiniciamos la selección del mecánico
 
-  aceptarEmergencia(nro: number) {
-    const lista = this.listaPersonal();
-    const personalId = lista.length > 0 ? lista[0].id : null;
+    // Calculamos la distancia si la emergencia tiene lat y lon
+    if (emergencia.latitud && emergencia.longitud) {
+      const dist = this.calcularDistancia(
+        this.tallerLat,
+        this.tallerLon,
+        emergencia.latitud,
+        emergencia.longitud,
+      );
+      this.distanciaCalculada.set(dist.toFixed(2) + ' km');
+    } else {
+      this.distanciaCalculada.set('Ubicación no disponible');
+    }
 
-    if (!personalId) {
-      alert('Necesitas registrar al menos un personal.');
+    this.mostrarModalDetalle.set(true);
+  }
+
+  cerrarDetalleEmergencia() {
+    this.mostrarModalDetalle.set(false);
+    this.emergenciaSeleccionada.set(null);
+    this.personalSeleccionadoId.set(null);
+  }
+
+  seleccionarPersonal(event: any) {
+    // Captura el ID del mecánico seleccionado en el <select> del HTML
+    const id = Number(event.target.value);
+    this.personalSeleccionadoId.set(id);
+  }
+
+  aceptarEmergencia() {
+    const emergencia = this.emergenciaSeleccionada();
+    const idPersonal = this.personalSeleccionadoId();
+
+    if (!emergencia) return;
+
+    if (!idPersonal) {
+      alert('Por favor, selecciona un mecánico de la lista antes de aceptar.');
       return;
     }
 
-    // 1. Verificar si el token existe
     const token = localStorage.getItem('access_token');
     if (!token) {
       alert('Sesión expirada. Por favor, vuelve a iniciar sesión.');
-      // Aquí podrías redirigir al login: this.router.navigate(['/login']);
       return;
     }
 
     const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`, // Asegúrate de que no falte el espacio después de Bearer
+      Authorization: `Bearer ${token}`,
     });
 
     this.http
       .post(
-        `http://127.0.0.1:8000/emergencias/${nro}/aceptar`,
-        { id_personal: personalId },
+        `http://127.0.0.1:8000/emergencias/${emergencia.nro}/aceptar`,
+        { id_personal: idPersonal },
         { headers: headers },
       )
       .subscribe({
         next: () => {
-          alert('¡Emergencia Aceptada!');
-          // ... resto de tu lógica de actualización
+          alert('¡Emergencia Aceptada y Asignada!');
+          // Quitamos la emergencia de la lista de pendientes
+          this.emergenciasPendientes.update((emergencias) =>
+            emergencias.filter((e) => e.nro !== emergencia.nro),
+          );
+          this.serviciosPendientes = this.emergenciasPendientes().length;
+          this.cerrarDetalleEmergencia(); // Cerramos el modal
         },
         error: (err) => {
           if (err.status === 401) {
@@ -195,8 +239,27 @@ export class HomeComponent implements OnInit {
           } else {
             alert('Error al aceptar la emergencia');
           }
-          console.error('Detalle del error:', err);
+          console.error(err);
         },
       });
+  }
+
+  // Función matemática para calcular distancia entre dos coordenadas (Fórmula de Haversine)
+  private calcularDistancia(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371; // Radio de la Tierra en km
+    const dLat = this.deg2rad(lat2 - lat1);
+    const dLon = this.deg2rad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(this.deg2rad(lat1)) *
+        Math.cos(this.deg2rad(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distancia en km
+  }
+
+  private deg2rad(deg: number): number {
+    return deg * (Math.PI / 180);
   }
 }
