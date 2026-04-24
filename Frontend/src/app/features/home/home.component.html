@@ -1,6 +1,7 @@
 <div class="min-h-screen bg-slate-50 flex flex-col md:flex-row font-manrope">
-  
-  <header class="md:hidden bg-secondary text-white p-4 flex justify-between items-center shadow-lg sticky top-0 z-50">
+  <header
+    class="md:hidden bg-secondary text-white p-4 flex justify-between items-center shadow-lg sticky top-0 z-50"
+  >
     <h1 class="text-lg font-black tracking-tight">EMERGENCIA V.</h1>
     <button (click)="logout()" class="p-2 hover:bg-white/10 rounded-lg flex items-center">
       <span class="material-symbols-outlined">logout</span>
@@ -11,32 +12,44 @@
     <h1 class="text-xl font-black mb-10 tracking-tight">EMERGENCIA V.</h1>
     <nav class="space-y-2 flex-grow">
       <a class="flex items-center gap-3 p-3 bg-white/10 rounded-2xl cursor-pointer transition-all">
-        <span class="material-symbols-outlined">dashboard</span> 
+        <span class="material-symbols-outlined">dashboard</span>
         <span class="font-bold">Panel Principal</span>
       </a>
-      <a class="flex items-center gap-3 p-3 hover:bg-white/5 rounded-2xl cursor-pointer opacity-70 transition-all">
+      <a
+        class="flex items-center gap-3 p-3 hover:bg-white/5 rounded-2xl cursor-pointer opacity-70 transition-all"
+      >
         <span class="material-symbols-outlined">car_crash</span> Emergencias
       </a>
-      <a class="flex items-center gap-3 p-3 hover:bg-white/5 rounded-2xl cursor-pointer opacity-70 transition-all">
+      <a
+        class="flex items-center gap-3 p-3 hover:bg-white/5 rounded-2xl cursor-pointer opacity-70 transition-all"
+      >
         <span class="material-symbols-outlined">group</span> Clientes
       </a>
-      <a class="flex items-center gap-3 p-3 hover:bg-white/5 rounded-2xl cursor-pointer opacity-70 transition-all">
+      <a
+        class="flex items-center gap-3 p-3 hover:bg-white/5 rounded-2xl cursor-pointer opacity-70 transition-all"
+      >
         <span class="material-symbols-outlined">settings</span> Configuración
       </a>
     </nav>
 
     <div class="mt-auto pt-6 border-t border-white/10">
-      <button (click)="logout()" class="flex items-center gap-3 p-3 w-full text-red-300 hover:bg-red-500/10 rounded-2xl transition-all">
+      <button
+        (click)="logout()"
+        class="flex items-center gap-3 p-3 w-full text-red-300 hover:bg-red-500/10 rounded-2xl transition-all"
+      >
         <span class="material-symbols-outlined">logout</span> Salir
       </button>
     </div>
   </aside>
 
   <main class="flex-grow pb-24 md:pb-0">
-    
-    <header class="bg-white p-6 shadow-sm hidden md:flex justify-between items-center border-b border-slate-100">
+    <header
+      class="bg-white p-6 shadow-sm hidden md:flex justify-between items-center border-b border-slate-100"
+    >
       <div>
-        <h2 class="text-2xl font-black text-slate-800 tracking-tight">Bienvenido, {{ tallerNombre }}</h2>
+        <h2 class="text-2xl font-black text-slate-800 tracking-tight">
+          Bienvenido, {{ tallerNombre }}
+        </h2>
         <p class="text-slate-400 text-sm font-medium">Gestión administrativa del taller</p>
       </div>
       <div class="flex items-center gap-4">
@@ -44,38 +57,46 @@
           <p class="text-sm font-bold text-slate-800">Administrador</p>
           <p class="text-xs text-primary font-medium">Online</p>
         </div>
-        <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-xl border-2 border-primary/20">
+        <div
+          class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-xl border-2 border-primary/20"
+        >
           {{ tallerNombre.charAt(0) }}
         </div>
       </div>
     </header>
 
     <div class="p-4 md:p-8 max-w-7xl mx-auto">
-      
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
-          <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Servicios Hoy</p>
+        <div
+          class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-md transition-shadow"
+        >
+          <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">
+            Servicios Hoy
+          </p>
           <div class="flex items-end gap-2">
             <p class="text-4xl font-black text-primary">{{ serviciosPendientes }}</p>
             <span class="text-green-500 text-xs font-bold mb-1">+2 hoy</span>
           </div>
         </div>
         <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100">
-          <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Personal Activo</p>
+          <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">
+            Personal Activo
+          </p>
           <p class="text-4xl font-black text-slate-800">{{ listaPersonal().length }}</p>
         </div>
         <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100">
           <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Calificación</p>
           <p class="text-4xl font-black text-yellow-500">4.8 <span class="text-xl">★</span></p>
         </div>
-        <div class="bg-primary p-6 rounded-[2rem] shadow-lg shadow-primary/20 text-white flex flex-col justify-center">
+        <div
+          class="bg-primary p-6 rounded-[2rem] shadow-lg shadow-primary/20 text-white flex flex-col justify-center"
+        >
           <p class="text-white/70 text-xs font-bold uppercase tracking-wider">Estado Sistema</p>
           <p class="text-xl font-bold italic">Operativo</p>
         </div>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
         <div class="lg:col-span-2 space-y-8">
           <section>
             <div class="flex justify-between items-center mb-6 px-2">
@@ -83,24 +104,46 @@
                 <span class="material-symbols-outlined text-primary">engineering</span>
                 Mi Personal
               </h3>
-              <button class="bg-primary text-white px-5 py-2.5 rounded-2xl text-sm font-bold flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/25" (click)="abrirModal()">
+              <button
+                class="bg-primary text-white px-5 py-2.5 rounded-2xl text-sm font-bold flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/25"
+                (click)="abrirModal()"
+              >
                 <span class="material-symbols-outlined text-sm">person_add</span> Nuevo Miembro
               </button>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div *ngFor="let persona of listaPersonal()" class="bg-white p-5 rounded-[2rem] shadow-sm border border-slate-100 flex items-center gap-4 hover:border-primary/30 transition-colors group">
-                <div class="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 overflow-hidden border border-slate-100">
-                  <img *ngIf="persona.foto_perfil" [src]="persona.foto_perfil" class="w-full h-full object-cover">
-                  <span *ngIf="!persona.foto_perfil" class="material-symbols-outlined text-3xl">account_circle</span>
+              <div
+                *ngFor="let persona of listaPersonal()"
+                class="bg-white p-5 rounded-[2rem] shadow-sm border border-slate-100 flex items-center gap-4 hover:border-primary/30 transition-colors group"
+              >
+                <div
+                  class="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 overflow-hidden border border-slate-100"
+                >
+                  <img
+                    *ngIf="persona.foto_perfil"
+                    [src]="persona.foto_perfil"
+                    class="w-full h-full object-cover"
+                  />
+                  <span *ngIf="!persona.foto_perfil" class="material-symbols-outlined text-3xl"
+                    >account_circle</span
+                  >
                 </div>
                 <div class="flex-grow">
-                  <h4 class="font-bold text-slate-800 group-hover:text-primary transition-colors">{{ persona.nombre_completo }}</h4>
-                  <p class="text-xs font-medium text-slate-400 uppercase tracking-tighter">{{ persona.cargo }}</p>
+                  <h4 class="font-bold text-slate-800 group-hover:text-primary transition-colors">
+                    {{ persona.nombre_completo }}
+                  </h4>
+                  <p class="text-xs font-medium text-slate-400 uppercase tracking-tighter">
+                    {{ persona.cargo }}
+                  </p>
                 </div>
                 <div class="flex flex-col items-end gap-2">
-                  <span [class]="persona.activo ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'" 
-                        class="text-[10px] px-2 py-1 rounded-lg font-black uppercase">
+                  <span
+                    [class]="
+                      persona.activo ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                    "
+                    class="text-[10px] px-2 py-1 rounded-lg font-black uppercase"
+                  >
                     {{ persona.activo ? 'Activo' : 'Baja' }}
                   </span>
                   <button class="text-slate-300 hover:text-primary transition-colors">
@@ -109,8 +152,13 @@
                 </div>
               </div>
 
-              <div *ngIf="listaPersonal().length === 0" class="col-span-full bg-slate-100/50 border-2 border-dashed border-slate-200 rounded-[2rem] p-10 flex flex-col items-center justify-center text-center">
-                <span class="material-symbols-outlined text-slate-300 text-5xl mb-2">group_add</span>
+              <div
+                *ngIf="listaPersonal().length === 0"
+                class="col-span-full bg-slate-100/50 border-2 border-dashed border-slate-200 rounded-[2rem] p-10 flex flex-col items-center justify-center text-center"
+              >
+                <span class="material-symbols-outlined text-slate-300 text-5xl mb-2"
+                  >group_add</span
+                >
                 <p class="text-slate-500 font-bold">No has registrado personal</p>
                 <p class="text-slate-400 text-xs">Comienza agregando a tus mecánicos.</p>
               </div>
@@ -118,8 +166,12 @@
           </section>
 
           <section class="bg-secondary/5 rounded-[2.5rem] p-8 border border-secondary/10">
-              <h3 class="font-black text-secondary mb-2 italic">Próximamente: Bitácora de Actividad</h3>
-              <p class="text-slate-500 text-sm">Aquí podrás ver qué miembro del personal atendió cada emergencia en tiempo real.</p>
+            <h3 class="font-black text-secondary mb-2 italic">
+              Próximamente: Bitácora de Actividad
+            </h3>
+            <p class="text-slate-500 text-sm">
+              Aquí podrás ver qué miembro del personal atendió cada emergencia en tiempo real.
+            </p>
           </section>
         </div>
 
@@ -129,91 +181,206 @@
               <span class="material-symbols-outlined text-red-500">notifications_active</span>
               Alertas Recientes
             </h3>
-            
-            <div class="flex flex-col items-center justify-center py-10 text-center">
+
+            <!-- Si NO hay emergencias -->
+            <div
+              *ngIf="emergenciasPendientes().length === 0"
+              class="flex flex-col items-center justify-center py-10 text-center"
+            >
               <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
                 <span class="material-symbols-outlined text-slate-200 text-4xl">check_circle</span>
               </div>
               <h4 class="text-slate-700 font-bold italic">Todo despejado</h4>
-              <p class="text-slate-400 text-xs px-4">No hay solicitudes de auxilio pendientes en este momento.</p>
+              <p class="text-slate-400 text-xs px-4">
+                No hay solicitudes de auxilio pendientes en este momento.
+              </p>
             </div>
 
-            <button class="w-full mt-4 py-4 bg-slate-50 hover:bg-slate-100 text-slate-500 rounded-2xl text-xs font-black uppercase tracking-widest transition-colors">
+            <!-- Si HAY emergencias -->
+            <div *ngIf="emergenciasPendientes().length > 0" class="space-y-4">
+              <div
+                *ngFor="let emer of emergenciasPendientes()"
+                class="bg-red-50 border border-red-100 p-4 rounded-2xl relative overflow-hidden group"
+              >
+                <div
+                  class="absolute top-0 right-0 bg-red-500 text-white text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg"
+                >
+                  NUEVA
+                </div>
+                <h4 class="font-black text-red-900 mb-1">Vehículo: {{ emer.vehiculo }}</h4>
+                <p class="text-sm text-red-800/80 font-medium mb-2">{{ emer.descripcion }}</p>
+                <div class="flex items-center gap-2 text-xs text-red-600 font-bold mb-3">
+                  <span class="material-symbols-outlined text-sm">location_on</span>
+                  {{ emer.ubicacion_real }}
+                </div>
+
+                <!-- Fotos de la emergencia (si hay) -->
+                <div
+                  *ngIf="emer.fotos && emer.fotos.length > 0"
+                  class="flex gap-2 mb-4 overflow-x-auto"
+                >
+                  <img
+                    *ngFor="let foto of emer.fotos"
+                    [src]="foto"
+                    class="h-16 w-16 object-cover rounded-xl border border-red-200"
+                  />
+                </div>
+
+                <button
+                  (click)="abrirDetalleEmergencia(emer)"
+                  class="w-full bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-colors shadow-lg shadow-red-500/30"
+                >
+                  Ver Detalles
+                </button>
+              </div>
+            </div>
+
+            <button
+              *ngIf="emergenciasPendientes().length === 0"
+              class="w-full mt-4 py-4 bg-slate-50 hover:bg-slate-100 text-slate-500 rounded-2xl text-xs font-black uppercase tracking-widest transition-colors"
+            >
               Ver historial completo
             </button>
           </div>
 
-          <div class="bg-gradient-to-br from-primary to-blue-700 rounded-[2.5rem] p-8 text-white relative overflow-hidden group">
-            <span class="material-symbols-outlined absolute -right-4 -bottom-4 text-white/10 text-9xl rotate-12 group-hover:scale-110 transition-transform">map</span>
+          <div
+            class="bg-gradient-to-br from-primary to-blue-700 rounded-[2.5rem] p-8 text-white relative overflow-hidden group"
+          >
+            <span
+              class="material-symbols-outlined absolute -right-4 -bottom-4 text-white/10 text-9xl rotate-12 group-hover:scale-110 transition-transform"
+              >map</span
+            >
             <h4 class="text-lg font-black mb-2 relative z-10">¿Necesitas ayuda?</h4>
-            <p class="text-white/80 text-xs mb-6 relative z-10 leading-relaxed">Pronto integraremos Mapas en tiempo real para rastrear a tus clientes.</p>
-            <button class="bg-white text-primary px-6 py-3 rounded-xl text-xs font-black uppercase relative z-10 hover:shadow-xl transition-all">
+            <p class="text-white/80 text-xs mb-6 relative z-10 leading-relaxed">
+              Pronto integraremos Mapas en tiempo real para rastrear a tus clientes.
+            </p>
+            <button
+              class="bg-white text-primary px-6 py-3 rounded-xl text-xs font-black uppercase relative z-10 hover:shadow-xl transition-all"
+            >
               Documentación
             </button>
           </div>
         </div>
-
       </div>
     </div>
     <div *ngIf="mostrarModal()" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-secondary/60 backdrop-blur-sm transition-opacity" (click)="cerrarModal()"></div>
+      <div
+        class="absolute inset-0 bg-secondary/60 backdrop-blur-sm transition-opacity"
+        (click)="cerrarModal()"
+      ></div>
 
-      <div class="bg-white rounded-[2.5rem] w-full max-w-md p-8 shadow-2xl relative z-10 animate-in fade-in zoom-in duration-300">
+      <div
+        class="bg-white rounded-[2.5rem] w-full max-w-md p-8 shadow-2xl relative z-10 animate-in fade-in zoom-in duration-300"
+      >
         <div class="flex justify-between items-center mb-6">
           <div>
             <h3 class="text-xl font-black text-slate-800 italic">Registrar Personal</h3>
-            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Acceso para la App Móvil</p>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+              Acceso para la App Móvil
+            </p>
           </div>
-          <button (click)="cerrarModal()" class="text-slate-400 hover:text-red-500 transition-colors">
+          <button
+            (click)="cerrarModal()"
+            class="text-slate-400 hover:text-red-500 transition-colors"
+          >
             <span class="material-symbols-outlined">close</span>
           </button>
         </div>
 
         <form [formGroup]="personalForm" (ngSubmit)="guardarPersonal()" class="space-y-4">
           <div class="flex flex-col items-center mb-6">
-    <div class="relative">
-      <div class="w-24 h-24 rounded-[2rem] bg-slate-100 border-4 border-white shadow-xl overflow-hidden flex items-center justify-center">
-        <img *ngIf="fotoPreview()" [src]="fotoPreview()" class="w-full h-full object-cover" [class.opacity-50]="subiendoFoto()">
-        
-        <span *ngIf="!fotoPreview()" class="material-symbols-outlined text-4xl text-slate-300">person</span>
+            <div class="relative">
+              <div
+                class="w-24 h-24 rounded-[2rem] bg-slate-100 border-4 border-white shadow-xl overflow-hidden flex items-center justify-center"
+              >
+                <img
+                  *ngIf="fotoPreview()"
+                  [src]="fotoPreview()"
+                  class="w-full h-full object-cover"
+                  [class.opacity-50]="subiendoFoto()"
+                />
 
-        <div *ngIf="subiendoFoto()" class="absolute inset-0 flex items-center justify-center bg-white/40">
-          <div class="w-6 h-6 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      </div>
-      
-      <label class="absolute -bottom-2 -right-2 bg-primary text-white w-10 h-10 rounded-xl flex items-center justify-center shadow-lg cursor-pointer hover:scale-110 active:scale-95 transition-all">
-        <span class="material-symbols-outlined text-xl">add_a_photo</span>
-        <input type="file" (change)="onFileSelected($event)" class="hidden" accept="image/*" [disabled]="subiendoFoto()">
-      </label>
-    </div>
-    <p class="text-[10px] font-black text-slate-400 uppercase mt-4 tracking-widest text-center">
-      {{ subiendoFoto() ? 'Subiendo a Cloudinary...' : 'Foto del Miembro' }}
-    </p>
-  </div>
+                <span
+                  *ngIf="!fotoPreview()"
+                  class="material-symbols-outlined text-4xl text-slate-300"
+                  >person</span
+                >
+
+                <div
+                  *ngIf="subiendoFoto()"
+                  class="absolute inset-0 flex items-center justify-center bg-white/40"
+                >
+                  <div
+                    class="w-6 h-6 border-4 border-primary border-t-transparent rounded-full animate-spin"
+                  ></div>
+                </div>
+              </div>
+
+              <label
+                class="absolute -bottom-2 -right-2 bg-primary text-white w-10 h-10 rounded-xl flex items-center justify-center shadow-lg cursor-pointer hover:scale-110 active:scale-95 transition-all"
+              >
+                <span class="material-symbols-outlined text-xl">add_a_photo</span>
+                <input
+                  type="file"
+                  (change)="onFileSelected($event)"
+                  class="hidden"
+                  accept="image/*"
+                  [disabled]="subiendoFoto()"
+                />
+              </label>
+            </div>
+            <p
+              class="text-[10px] font-black text-slate-400 uppercase mt-4 tracking-widest text-center"
+            >
+              {{ subiendoFoto() ? 'Subiendo a Cloudinary...' : 'Foto del Miembro' }}
+            </p>
+          </div>
           <div>
-            <label class="text-[10px] font-black text-slate-400 uppercase ml-3 mb-1 block">Nombre Completo</label>
-            <input type="text" formControlName="nombre_completo" placeholder="Ej. Carlos Arana"
-                   class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+            <label class="text-[10px] font-black text-slate-400 uppercase ml-3 mb-1 block"
+              >Nombre Completo</label
+            >
+            <input
+              type="text"
+              formControlName="nombre_completo"
+              placeholder="Ej. Carlos Arana"
+              class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+            />
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="text-[10px] font-black text-slate-400 uppercase ml-3 mb-1 block">Email Direccion</label>
-              <input type="email" formControlName="email" placeholder="correo@taller.com"
-                     class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+              <label class="text-[10px] font-black text-slate-400 uppercase ml-3 mb-1 block"
+                >Email</label
+              >
+              <input
+                type="email"
+                formControlName="email"
+                placeholder="correo@taller.com"
+                class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+              />
             </div>
             <div>
-              <label class="text-[10px] font-black text-slate-400 uppercase ml-3 mb-1 block">Password</label>
-              <input type="password" formControlName="password" placeholder="******"
-                     class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+              <label class="text-[10px] font-black text-slate-400 uppercase ml-3 mb-1 block"
+                >Password</label
+              >
+              <input
+                type="password"
+                formControlName="password"
+                placeholder="******"
+                class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+              />
             </div>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="text-[10px] font-black text-slate-400 uppercase ml-3 mb-1 block">Cargo</label>
-              <select formControlName="cargo" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none">
+              <label class="text-[10px] font-black text-slate-400 uppercase ml-3 mb-1 block"
+                >Cargo</label
+              >
+              <select
+                formControlName="cargo"
+                class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none"
+              >
                 <option value="Mecánico">Mecánico</option>
                 <option value="Electricista">Electricista</option>
                 <option value="Llantero">Llantero</option>
@@ -221,22 +388,158 @@
               </select>
             </div>
             <div>
-              <label class="text-[10px] font-black text-slate-400 uppercase ml-3 mb-1 block">Especialidad</label>
-              <input type="text" formControlName="especialidad" placeholder="Ej. Motores"
-                     class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+              <label class="text-[10px] font-black text-slate-400 uppercase ml-3 mb-1 block"
+                >Especialidad</label
+              >
+              <input
+                type="text"
+                formControlName="especialidad"
+                placeholder="Ej. Motores"
+                class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+              />
             </div>
           </div>
 
-          <button type="submit" [disabled]="personalForm.invalid"
-                  class="w-full bg-primary text-white py-4 rounded-2xl font-black uppercase tracking-widest mt-4 shadow-lg shadow-primary/30 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50">
+          <button
+            type="submit"
+            [disabled]="personalForm.invalid"
+            class="w-full bg-primary text-white py-4 rounded-2xl font-black uppercase tracking-widest mt-4 shadow-lg shadow-primary/30 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+          >
             Confirmar Registro
           </button>
         </form>
       </div>
     </div>
+    <div
+      *ngIf="mostrarModalDetalle()"
+      class="fixed inset-0 z- flex items-center justify-center p-4"
+    >
+      <div
+        class="absolute inset-0 bg-secondary/80 backdrop-blur-md transition-opacity"
+        (click)="cerrarDetalleEmergencia()"
+      ></div>
+
+      <div
+        class="bg-white rounded-[2.5rem] w-full max-w-3xl overflow-hidden shadow-2xl relative z-10 animate-in fade-in zoom-in duration-300 flex flex-col md:flex-row"
+      >
+        <div class="md:w-1/2 bg-slate-50 p-8 border-r border-slate-100 flex flex-col">
+          <div class="flex justify-between items-start mb-6">
+            <div>
+              <h3 class="text-xl font-black text-slate-800 italic">Misión de Rescate</h3>
+              <p class="text-[10px] text-red-500 font-bold uppercase tracking-widest">
+                Prioridad Alta
+              </p>
+            </div>
+          </div>
+
+          <div
+            class="w-full h-48 bg-slate-200 rounded-[2rem] overflow-hidden mb-6 relative border-4 border-white shadow-sm flex items-center justify-center bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"
+          >
+            <span
+              class="material-symbols-outlined text-slate-400 text-5xl bg-white p-3 rounded-full shadow-sm"
+              >map</span
+            >
+
+            <div
+              class="absolute bottom-4 bg-white/95 backdrop-blur px-4 py-2 rounded-xl text-xs font-bold text-slate-700 shadow-lg flex items-center gap-2"
+            >
+              <span class="material-symbols-outlined text-primary text-sm">route</span>
+              A {{ distanciaCalculada() }} del taller
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                Vehículo
+              </p>
+              <p class="font-bold text-slate-800">{{ emergenciaSeleccionada()?.vehiculo }}</p>
+            </div>
+            <div>
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                Problema Reportado
+              </p>
+              <p class="text-sm font-medium text-slate-600">
+                {{ emergenciaSeleccionada()?.descripcion }}
+              </p>
+            </div>
+            <div>
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                Ubicación
+              </p>
+              <p class="text-sm font-medium text-slate-600 flex items-center gap-1">
+                <span class="material-symbols-outlined text-red-500 text-sm">location_on</span>
+                {{ emergenciaSeleccionada()?.ubicacion_real }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="md:w-1/2 p-8 flex flex-col">
+          <div class="flex justify-end mb-4">
+            <button
+              (click)="cerrarDetalleEmergencia()"
+              class="text-slate-400 hover:text-red-500 transition-colors bg-slate-100 hover:bg-red-50 p-2 rounded-full"
+            >
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <h4 class="text-lg font-black text-slate-800 mb-2">Asignar Personal</h4>
+          <p class="text-xs text-slate-500 mb-8">
+            Selecciona el mecánico de tu equipo que atenderá esta emergencia.
+          </p>
+
+          <div class="flex-grow">
+            <label class="text-[10px] font-black text-slate-400 uppercase ml-3 mb-2 block"
+              >Mecánico Disponible</label
+            >
+
+            <div class="relative">
+              <select
+                (change)="seleccionarPersonal($event)"
+                class="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none appearance-none cursor-pointer hover:border-slate-300 transition-colors"
+              >
+                <option value="" disabled selected>-- Elige un mecánico --</option>
+                <option *ngFor="let persona of listaPersonal()" [value]="persona.id">
+                  {{ persona.nombre_completo }} - {{ persona.cargo }}
+                </option>
+              </select>
+              <span
+                class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                >expand_more</span
+              >
+            </div>
+
+            <div
+              *ngIf="listaPersonal().length === 0"
+              class="mt-4 p-4 bg-red-50 rounded-2xl border border-red-100 flex items-center gap-3"
+            >
+              <span class="material-symbols-outlined text-red-500">warning</span>
+              <div>
+                <p class="text-xs text-red-700 font-bold">No tienes personal.</p>
+                <p class="text-[10px] text-red-500">
+                  Registra un miembro antes de aceptar misiones.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <button
+            (click)="aceptarEmergencia()"
+            [disabled]="listaPersonal().length === 0"
+            class="w-full bg-red-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest mt-6 shadow-lg shadow-red-500/30 hover:bg-red-700 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed"
+          >
+            Confirmar Asignación
+          </button>
+        </div>
+      </div>
+    </div>
   </main>
 
-  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 flex justify-around p-4 z-50 rounded-t-[2rem] shadow-2xl">
+  <nav
+    class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 flex justify-around p-4 z-50 rounded-t-[2rem] shadow-2xl"
+  >
     <a class="flex flex-col items-center text-primary group">
       <span class="material-symbols-outlined font-bold">dashboard</span>
       <span class="text-[10px] font-black uppercase tracking-tighter">Panel</span>
@@ -254,5 +557,4 @@
       <span class="text-[10px] font-bold uppercase tracking-tighter">Ajustes</span>
     </a>
   </nav>
-
 </div>

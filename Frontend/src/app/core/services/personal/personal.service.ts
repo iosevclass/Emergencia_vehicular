@@ -1,13 +1,12 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { PersonalTaller } from '../../models/personal.model';
-import { environment  } from 'src/environments/environment';
+import { environment } from 'src/environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class PersonalService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/usuarios/personal`; // Ajusta a tu URL de FastAPI
-
+  private apiUrl = `${environment.apiUrl}/usuarios/personal`;
   // Función para obtener el token del localStorage
   private getHeaders() {
     const token = localStorage.getItem('access_token');

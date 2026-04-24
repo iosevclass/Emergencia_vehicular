@@ -31,7 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^1.1.0
-  geolocator: ^11.0.0 # Para obtener la posición GPS
+  geolocator: ^14.0.2 # Para obtener la posición GPS
   permission_handler: ^11.0.0 # Para gestionar los permisos del celular
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -48,6 +48,9 @@ dependencies:
   flutter_dotenv: ^6.0.0
   flutter_secure_storage: ^10.0.0
   jwt_decoder: ^2.0.1
+  web_socket_channel: ^2.4.0
+  shared_preferences: ^2.2.1
+  image_picker: ^1.2.1
 
 dev_dependencies:
   flutter_test:

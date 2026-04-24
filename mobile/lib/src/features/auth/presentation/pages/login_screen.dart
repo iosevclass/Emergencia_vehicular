@@ -7,6 +7,9 @@ import 'register_screen.dart';
 import 'dart:convert'; // Para jsonEncode y jsonDecode
 import 'package:http/http.dart' as http; // Para las peticiones
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Para guardar el token
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+final String baseUrl = dotenv.get('API_URL');
 
 class LoginScreen extends StatefulWidget {
   // Antes era StatelessWidget
@@ -36,9 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       // 1. Petición al Backend (Asegúrate de usar tu IP local o 10.0.2.2 para el emulador)
       final response = await http.post(
-        Uri.parse(
-          'http://192.168.1.10:8000/usuarios/login',
-        ), // Ajusta la URL según tu config
+        Uri.parse('$baseUrl/usuarios/login'), // Ajusta la URL según tu config
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': email, 'password': password}),
       );
