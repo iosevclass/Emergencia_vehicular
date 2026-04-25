@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth/auth.service';
 import { PersonalService } from '../../core/services/personal/personal.service';
 import { PersonalTaller } from '../../core/models/personal.model';
@@ -9,14 +10,18 @@ import { MediaService } from '../../core/services/media.service';
 import {
   EmergenciaWsService,
   EmergenciaNotificacion,
-} from '../../core/services/emergencia-ws.service';
+} from '../../core/services/emergencia/emergencia-ws.service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterLink, // 2. Añadir aquí
+  ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
 })

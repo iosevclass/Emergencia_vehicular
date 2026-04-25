@@ -18,6 +18,7 @@ class EmergenciaResponse(BaseModel):
     fotos: Optional[List[str]] = None
     fecha_creacion: datetime
     id_vehiculo: int
+    id_taller: Optional[int] = None
     id_personal: Optional[int] = None
 
     class Config:
@@ -25,3 +26,6 @@ class EmergenciaResponse(BaseModel):
 
 class AceptarEmergenciaRequest(BaseModel):
     id_personal: int
+
+class EstadoUpdateRequest(BaseModel):
+    estado: str
