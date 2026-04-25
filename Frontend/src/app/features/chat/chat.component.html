@@ -1,0 +1,106 @@
+<div class="flex h-[calc(100vh-64px)] bg-gray-100">
+  <!-- Barra Lateral: Lista de Chats -->
+  <div class="w-1/3 bg-white border-r border-gray-200 flex flex-col">
+    <div class="p-4 border-b border-gray-200 bg-gray-50">
+      <h2 class="text-xl font-bold text-gray-800">Mensajes de Emergencias</h2>
+    </div>
+    
+    <div class="flex-1 overflow-y-auto">
+      <div *ngIf="chatsActivos.length === 0" class="p-8 text-center text-gray-500">
+        No tienes chats activos actualmente.
+      </div>
+      
+      <div *ngFor="let chat of chatsActivos" 
+           (click)="seleccionarChat(chat)"
+           [class.bg-red-50]="chatSeleccionado?.nro_emergencia === chat.nro_emergencia"
+           class="p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors">
+        <div class="flex justify-between items-start">
+          <div class="flex-1">
+            <h3 class="font-semibold text-gray-900">Emergencia #{{ chat.nro_emergencia }}</h3>
+            <p class="text-sm text-gray-600 truncate">{{ chat.ultimo_mensaje || chat.descripcion }}</p>
+          </div>
+          <div class="flex flex-col items-end">
+            <span class="text-xs text-gray-400">{{ chat.fecha_ultimo_mensaje | date:'shortTime' }}</span>
+            <span *ngIf="chat.mensajes_pendientes > 0" 
+                  class="mt-1 px-2 py-0.5 bg-red-600 text-white text-[10px] font-bold rounded-full">
+              {{ chat.mensajes_pendientes }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Área Central: El Chat -->
+  <div class="flex-1 flex flex-col bg-white">
+    <ng-container *ngIf="chatSeleccionado; else noChat">
+      <!-- Header del Chat -->
+      <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-white shadow-sm">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold">
+            #{{ chatSeleccionado.nro_emergencia }}
+          </div>
+          <div>
+            <h3 class="font-bold text-gray-900">Atendiendo Emergencia</h3>
+            <p class="text-xs text-green-500 flex items-center gap-1">
+              <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> En línea
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mensajes -->
+      <div #scrollContainer class="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
+        <div *ngFor="let msg of mensajes" 
+             [class.justify-end]="esMio(msg)" 
+             class="flex">
+          <div [class.bg-red-600]="esMio(msg)"
+               [class.text-white]="esMio(msg)"
+               [class.bg-white]="!esMio(msg)"
+               [class.shadow-md]="true"
+               class="max-w-[70%] rounded-2xl px-4 py-2 relative">
+            <p class="text-sm">{{ msg.mensaje }}</p>
+            <div class="flex items-center justify-end gap-1 mt-1">
+              <span class="text-[10px] opacity-70">{{ msg.fecha_hora | date:'shortTime' }}</span>
+              
+              <!-- Icono de doble check SVG -->
+              <svg *ngIf="esMio(msg)" 
+                   [style.color]="msg.leido ? '#3b82f6' : 'rgba(255,255,255,0.6)'"
+                   class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <path d="M0.41 13.41L6 19L7.41 17.58L1.83 12M22.24 5.58L11.66 16.17L7.5 12L6.07 13.41L11.66 19L23.66 7M18 7L16.59 5.58L10.24 11.93L11.66 13.34L18 7Z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input de Mensaje -->
+      <div class="p-4 bg-white border-t border-gray-200">
+        <div class="flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 shadow-inner">
+          <input type="text" 
+                 [(ngModel)]="nuevoMensaje"
+                 (keyup.enter)="enviar()"
+                 placeholder="Escribe un mensaje..."
+                 class="flex-1 bg-transparent border-none focus:outline-none text-sm text-gray-700">
+          <button (click)="enviar()" 
+                  [disabled]="!nuevoMensaje.trim()"
+                  class="p-2 bg-red-600 text-white rounded-full hover:bg-red-700 disabled:opacity-50 transition-all flex items-center justify-center">
+            <!-- Icono Send SVG -->
+            <svg class="w-5 h-5 fill-current rotate-45" viewBox="0 0 24 24">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-template #noChat>
+      <div class="flex-1 flex flex-col items-center justify-center text-gray-400">
+        <svg class="w-16 h-16 mb-4 opacity-20 fill-current" viewBox="0 0 24 24">
+          <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+        </svg>
+        <p class="text-lg">Selecciona una emergencia para ver la conversación</p>
+      </div>
+    </ng-template>
+  </div>
+</div>

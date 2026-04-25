@@ -4,7 +4,7 @@ from typing import List
 
 from app.core.database import get_db
 from app.api.auth import get_current_user
-from app.modules.usuarios.models import Usuario, UserRole
+from app.modules.usuarios.models import Usuario, UserRole, Cliente, PersonalTaller
 from app.modules.emergencias import models, schemas
 from app.modules.vehiculos.models import Vehiculo
 from app.modules.emergencias.websockets import manager
@@ -84,6 +84,20 @@ async def aceptar_emergencia(nro: int, req: schemas.AceptarEmergenciaRequest, db
 
     emergencia.id_personal = req.id_personal
     emergencia.estado = models.EstadoEmergencia.atendiendo
+    
+    # --- MENSAJE AUTOMÁTICO ---
+    # Buscamos el nombre del personal para el mensaje
+    personal = db.query(PersonalTaller).filter(PersonalTaller.id == req.id_personal).first()
+    nombre_mecanico = personal.nombre_completo if personal else "un mecánico"
+    
+    mensaje_auto = models.Mensajeria(
+        nro_emergencia=nro,
+        id_remitente=personal.id if personal else current_user.id,
+        mensaje=f"¡Hola! Soy {nombre_mecanico}. He aceptado tu solicitud y voy en camino a ayudarte."
+    )
+    db.add(mensaje_auto)
+    # ---------------------------
+
     db.commit()
     db.refresh(emergencia)
 
@@ -123,5 +137,180 @@ async def completar_emergencia(nro: int, db: Session = Depends(get_db), current_
                 "estado": "terminado"
             }
         })
-
     return emergencia
+
+
+@router.get("/cliente/mis-emergencias", response_model=List[schemas.EmergenciaResponse])
+def obtener_mis_emergencias_cliente(
+    db: Session = Depends(get_db), 
+    current_user: Usuario = Depends(get_current_user)
+):
+    """ Devuelve todas las emergencias creadas por el cliente logueado """
+    # Buscamos los IDs de los vehículos que pertenecen al cliente
+    vehiculos_ids = [v.id for v in db.query(Vehiculo).filter(Vehiculo.cliente_id == current_user.id).all()]
+    
+    # Buscamos las emergencias de esos vehículos, ordenadas por la más reciente
+    emergencias = db.query(models.Emergencia).filter(
+        models.Emergencia.id_vehiculo.in_(vehiculos_ids)
+    ).order_by(models.Emergencia.fecha_creacion.desc()).all()
+    
+    return emergencias
+
+
+# ---- MENSAJERÍA ----
+# ==========================================
+# ---- ENDPOINTS DE MENSAJERÍA (CHAT) ----
+# ==========================================
+
+@router.post("/{nro}/mensajes", response_model=schemas.MensajeResponse)
+async def enviar_mensaje(
+    nro: int,
+    req: schemas.MensajeCreate,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    # 1. Validar emergencia y obtener el taller asignado
+    emergencia = db.query(models.Emergencia).filter(models.Emergencia.nro == nro).first()
+    if not emergencia:
+        raise HTTPException(status_code=404, detail="Emergencia no encontrada")
+
+    # 2. Guardar en DB
+    nuevo_mensaje = models.Mensajeria(
+        nro_emergencia=nro,
+        id_remitente=current_user.id,
+        mensaje=req.mensaje
+    )
+    db.add(nuevo_mensaje)
+    db.commit()
+    db.refresh(nuevo_mensaje)
+
+    # 3. Payload con información de filtrado
+    ws_payload = {
+        "type": "NEW_MESSAGE",
+        "data": {
+            "nro_emergencia": nro,
+            "id_remitente": current_user.id,
+            "mensaje": req.mensaje,
+            "id_taller_asignado": emergencia.id_personal  # <--- CRUCIAL
+        }
+    }
+
+    # 4. Enrutamiento Inteligente
+    if current_user.rol.value == "cliente":
+        # Seguimos usando broadcast, pero el Frontend del taller 
+        # ignorará el mensaje si el id_taller_asignado no es el suyo.
+        await manager.broadcast_to_talleres(ws_payload)
+    else:
+        # Al cliente sí le llega directo porque tenemos su client_id
+        vehiculo = db.query(Vehiculo).filter(Vehiculo.id == emergencia.id_vehiculo).first()
+        if vehiculo:
+            await manager.send_to_client(vehiculo.cliente_id, ws_payload)
+
+    return nuevo_mensaje
+
+
+@router.get("/{nro}/mensajes", response_model=List[schemas.MensajeResponse])
+def obtener_historial_chat(nro: int, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
+    """ Devuelve todos los mensajes de una emergencia específica """
+    
+    mensajes = db.query(models.Mensajeria).filter(
+        models.Mensajeria.nro_emergencia == nro
+    ).order_by(models.Mensajeria.fecha_hora.asc()).all()
+    
+    return mensajes
+
+
+@router.put("/{nro}/mensajes/leer")
+async def marcar_mensajes_como_leidos(
+    nro: int,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    """ Cuando el usuario entra al chat, marca los mensajes del 'otro' como leídos """
+    
+    # Buscamos los mensajes de esta emergencia que NO sean míos y que NO estén leídos
+    mensajes_no_leidos = db.query(models.Mensajeria).filter(
+        models.Mensajeria.nro_emergencia == nro,
+        models.Mensajeria.id_remitente != current_user.id,
+        models.Mensajeria.leido == False
+    ).all()
+
+    if not mensajes_no_leidos:
+        return {"mensaje": "No hay mensajes nuevos por leer"}
+
+    # Actualizamos el estado a True (Leído)
+    for msg in mensajes_no_leidos:
+        msg.leido = True
+    
+    db.commit()
+
+    # Notificamos por WebSocket que hubo una actualización de lectura 
+    # (Ideal para pintar el doble check azul en el Frontend)
+    ws_payload = {
+        "type": "MESSAGES_READ",
+        "data": {
+            "nro_emergencia": nro,
+            "leido_por": current_user.id
+        }
+    }
+
+    if current_user.rol.value == "cliente":
+        await manager.broadcast_to_talleres(ws_payload)
+    else:
+        emergencia = db.query(models.Emergencia).filter(models.Emergencia.nro == nro).first()
+        vehiculo = db.query(Vehiculo).filter(Vehiculo.id == emergencia.id_vehiculo).first()
+        if vehiculo:
+            await manager.send_to_client(vehiculo.cliente_id, ws_payload)
+
+    return {"mensaje": f"{len(mensajes_no_leidos)} mensajes marcados como leídos"}
+@router.get("/chats/activos", response_model=List[dict])
+def obtener_lista_chats_activos(
+    db: Session = Depends(get_db), 
+    current_user: Usuario = Depends(get_current_user)
+):
+    """ 
+    Lista todas las emergencias 'atendiendo' para el taller 
+    con contador de mensajes no leídos.
+    """
+    if current_user.rol.value not in ["admin_taller", "personal_taller"]:
+        raise HTTPException(status_code=403, detail="No autorizado")
+
+    # 1. Obtener las emergencias que este taller está atendiendo
+    # Nota: Si es admin, quizás quieras que vea todas las 'atendiendo'
+    query = db.query(models.Emergencia).filter(
+        models.Emergencia.estado == models.EstadoEmergencia.atendiendo
+    )
+    
+    # Si es personal específico, filtramos solo las suyas
+    if current_user.rol.value == "personal_taller":
+        query = query.filter(models.Emergencia.id_personal == current_user.id)
+    
+    emergencias = query.all()
+    
+    resultado = []
+    
+    for e in emergencias:
+        # 2. Contar cuántos mensajes hay de esta emergencia que el taller NO ha leído
+        # (Osea, mensajes donde el remitente NO es el taller)
+        no_leidos = db.query(models.Mensajeria).filter(
+            models.Mensajeria.nro_emergencia == e.nro,
+            models.Mensajeria.id_remitente != current_user.id,
+            models.Mensajeria.leido == False
+        ).count()
+        
+        # 3. Obtener el texto del último mensaje para la previsualización
+        ultimo_msg = db.query(models.Mensajeria).filter(
+            models.Mensajeria.nro_emergencia == e.nro
+        ).order_by(models.Mensajeria.fecha_hora.desc()).first()
+
+        resultado.append({
+            "nro_emergencia": e.nro,
+            "descripcion": e.descripcion,
+            "mensajes_pendientes": no_leidos,
+            "ultimo_mensaje": ultimo_msg.mensaje if ultimo_msg else "",
+            "fecha_ultimo_mensaje": ultimo_msg.fecha_hora if ultimo_msg else e.fecha_creacion,
+            "id_vehiculo": e.id_vehiculo
+        })
+        
+       
+    return resultado
