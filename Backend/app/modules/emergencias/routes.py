@@ -268,17 +268,17 @@ async def enviar_mensaje(
             "nro_emergencia": nro,
             "id_remitente": current_user.id,
             "mensaje": req.mensaje,
-            "id_taller_asignado": emergencia.id_personal  # <--- CRUCIAL
+            "id_taller": emergencia.id_taller,
+            "id_personal": emergencia.id_personal
         }
     }
 
     # 4. Enrutamiento Inteligente
     if current_user.rol.value == "cliente":
-        # Seguimos usando broadcast, pero el Frontend del taller 
-        # ignorará el mensaje si el id_taller_asignado no es el suyo.
+        # Broadcast a los talleres; ellos filtrarán por id_taller en el front
         await manager.broadcast_to_talleres(ws_payload)
     else:
-        # Al cliente sí le llega directo porque tenemos su client_id
+        # Al cliente le llega directo
         vehiculo = db.query(Vehiculo).filter(Vehiculo.id == emergencia.id_vehiculo).first()
         if vehiculo:
             await manager.send_to_client(vehiculo.cliente_id, ws_payload)
@@ -353,14 +353,16 @@ def obtener_lista_chats_activos(
         raise HTTPException(status_code=403, detail="No autorizado")
 
     # 1. Obtener las emergencias que este taller está atendiendo
-    # Nota: Si es admin, quizás quieras que vea todas las 'atendiendo'
     query = db.query(models.Emergencia).filter(
         models.Emergencia.estado == models.EstadoEmergencia.atendiendo
     )
     
-    # Si es personal específico, filtramos solo las suyas
+    # Si es personal específico (mecánico), filtramos solo las que tiene asignadas
     if current_user.rol.value == "personal_taller":
         query = query.filter(models.Emergencia.id_personal == current_user.id)
+    # Si es admin, filtramos por su id_taller
+    elif current_user.rol.value == "admin_taller":
+        query = query.filter(models.Emergencia.id_taller == current_user.id)
     
     emergencias = query.all()
     
@@ -368,7 +370,6 @@ def obtener_lista_chats_activos(
     
     for e in emergencias:
         # 2. Contar cuántos mensajes hay de esta emergencia que el taller NO ha leído
-        # (Osea, mensajes donde el remitente NO es el taller)
         no_leidos = db.query(models.Mensajeria).filter(
             models.Mensajeria.nro_emergencia == e.nro,
             models.Mensajeria.id_remitente != current_user.id,
@@ -386,7 +387,9 @@ def obtener_lista_chats_activos(
             "mensajes_pendientes": no_leidos,
             "ultimo_mensaje": ultimo_msg.mensaje if ultimo_msg else "",
             "fecha_ultimo_mensaje": ultimo_msg.fecha_hora if ultimo_msg else e.fecha_creacion,
-            "id_vehiculo": e.id_vehiculo
+            "id_vehiculo": e.id_vehiculo,
+            "id_taller": e.id_taller,
+            "id_personal": e.id_personal
         })
         
        

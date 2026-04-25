@@ -46,19 +46,28 @@ export class ChatComponent implements OnInit, OnDestroy {
         }).join(''));
         const decoded = JSON.parse(jsonPayload);
         this.myId = decoded.sub ? parseInt(decoded.sub) : null;
+        console.log("✅ Mi ID decodificado del token:", this.myId);
       } catch (e) {
-        console.error("Error decodificando token", e);
+        console.error("❌ Error decodificando token", e);
       }
     }
   }
 
   cargarChats() {
-    this.chatService.getChatsActivos().subscribe(chats => {
-      this.chatsActivos = chats;
+    console.log("⏳ Cargando chats activos...");
+    this.chatService.getChatsActivos().subscribe({
+      next: (chats) => {
+        this.chatsActivos = chats;
+        console.log("📥 Chats activos recibidos:", chats);
+      },
+      error: (err) => {
+        console.error("❌ Error al cargar chats activos:", err);
+      }
     });
   }
 
   seleccionarChat(chat: any) {
+    console.log("👉 Chat seleccionado:", chat);
     this.chatSeleccionado = chat;
     this.cargarHistorial(chat.nro_emergencia);
     this.marcarComoLeido(chat.nro_emergencia);
@@ -68,8 +77,10 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   cargarHistorial(nro: number) {
+    console.log(`⏳ Cargando historial para emergencia #${nro}...`);
     this.chatService.getHistorial(nro).subscribe(msgs => {
       this.mensajes = msgs;
+      console.log("📥 Mensajes recibidos:", msgs);
       this.scrollToBottom();
     });
   }
@@ -84,6 +95,8 @@ export class ChatComponent implements OnInit, OnDestroy {
     const texto = this.nuevoMensaje;
     const nro = this.chatSeleccionado.nro_emergencia;
     
+    console.log(`📤 Enviando mensaje a emergencia #${nro}:`, texto);
+
     // Optimistic Update
     this.mensajes.push({
       id_remitente: this.myId,
@@ -95,13 +108,25 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.scrollToBottom();
 
     this.chatService.enviarMensaje(nro, texto).subscribe({
-      error: (err) => console.error("Error enviando mensaje", err)
+      next: () => console.log("✅ Mensaje enviado correctamente"),
+      error: (err) => console.error("❌ Error enviando mensaje", err)
     });
   }
 
   procesarMensajeWS(payload: any) {
+    console.log("🔌 Mensaje recibido por WS:", payload);
     if (payload.type === 'NEW_MESSAGE') {
       const msg = payload.data;
+
+      // --- FILTRADO DE SEGURIDAD PARA EL TALLER ---
+      // Verificamos que el mensaje pertenezca a este taller o mecánico
+      // Usamos == para permitir comparación entre string y number por si acaso
+      const esParaMi = msg.id_taller == this.myId || msg.id_personal == this.myId || msg.id_remitente == this.myId;
+      
+      if (!esParaMi) {
+        console.log("🙈 Ignorando mensaje (no es para este taller/personal)");
+        return; 
+      }
       
       // Si el mensaje es para el chat que tengo abierto
       if (this.chatSeleccionado && msg.nro_emergencia === this.chatSeleccionado.nro_emergencia) {
@@ -126,6 +151,7 @@ export class ChatComponent implements OnInit, OnDestroy {
           chat.fecha_ultimo_mensaje = new Date().toISOString();
         } else {
           // Si no existe en la lista (chat nuevo), recargar lista
+          console.log("🆕 Detectado chat nuevo o actualización, recargando lista...");
           this.cargarChats();
         }
       }
