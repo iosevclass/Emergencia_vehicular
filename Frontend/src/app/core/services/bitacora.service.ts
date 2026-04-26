@@ -25,6 +25,7 @@ export class BitacoraService {
   getBitacora(): Observable<BitacoraEntry[]> {
     const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    // Usamos la barra al final que es lo que espera el router de FastAPI por defecto
     return this.http.get<BitacoraEntry[]>(`${this.apiUrl}/`, { headers });
   }
 }

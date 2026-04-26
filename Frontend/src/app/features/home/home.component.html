@@ -19,7 +19,7 @@
       <a routerLink="/home/chat" routerLinkActive="opacity-100 bg-white/10" class="flex items-center gap-3 p-3 hover:bg-white/10 rounded-2xl cursor-pointer opacity-70 transition-all">
         <span class="material-symbols-outlined">group</span> Clientes
       </a>
-      <a routerLink="/home/bitacora" routerLinkActive="opacity-100 bg-white/10" class="flex items-center gap-3 p-3 hover:bg-white/10 rounded-2xl cursor-pointer opacity-70 transition-all">
+      <a *ngIf="isAdminSistema" routerLink="/home/bitacora" routerLinkActive="opacity-100 bg-white/10" class="flex items-center gap-3 p-3 hover:bg-white/10 rounded-2xl cursor-pointer opacity-70 transition-all">
         <span class="material-symbols-outlined">history</span> Bitácora
       </a>
       
@@ -84,7 +84,7 @@
       <span class="material-symbols-outlined">admin_panel_settings</span>
       <span class="text-[9px] font-bold uppercase tracking-tighter mt-1">Admin</span>
     </a>
-    <a routerLink="/home/bitacora" routerLinkActive="text-primary" class="flex flex-col items-center text-slate-300">
+    <a *ngIf="isAdminSistema" routerLink="/home/bitacora" routerLinkActive="text-primary" class="flex flex-col items-center text-slate-300">
       <span class="material-symbols-outlined font-bold">history</span>
       <span class="text-[10px] font-black uppercase tracking-tighter">Bitácora</span>
     </a>

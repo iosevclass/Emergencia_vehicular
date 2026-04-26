@@ -1,13 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, status, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, HTTPException, status, WebSocket, WebSocketDisconnect, Request
 from sqlalchemy.orm import Session
 from typing import List
 
 from app.core.database import get_db
 from app.api.auth import get_current_user
-from app.modules.usuarios.models import Usuario, UserRole, Cliente, PersonalTaller, PersonalTaller
+from app.modules.usuarios.models import Usuario, UserRole, Cliente, PersonalTaller
 from app.modules.emergencias import models, schemas
 from app.modules.vehiculos.models import Vehiculo
 from app.modules.emergencias.websockets import manager
+from app.modules.bitacora.utils import registrar_evento
 
 router = APIRouter(prefix="/emergencias", tags=["emergencias"])
 
@@ -57,7 +58,7 @@ def get_emergencias_cliente(db: Session = Depends(get_db), current_user: Usuario
 
 # ---- ENDPOINTS ----
 @router.post("/", response_model=schemas.EmergenciaResponse)
-async def create_emergencia(emergencia: schemas.EmergenciaCreate, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
+async def create_emergencia(emergencia: schemas.EmergenciaCreate, fastapi_request: Request, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
     if current_user.rol.value != "cliente":
         raise HTTPException(status_code=403, detail="Solo clientes pueden solicitar emergencias")
         
@@ -77,6 +78,9 @@ async def create_emergencia(emergencia: schemas.EmergenciaCreate, db: Session = 
     db.commit()
     db.refresh(db_emergencia)
     
+    # Registrar en bitácora
+    registrar_evento(db, fastapi_request, "Solicitud de Emergencia", f"Cliente {current_user.email} solicitó ayuda para vehículo {vehiculo.placa}", usuario=current_user)
+
     # Broadcast a todos los talleres
     await manager.broadcast_to_talleres({
         "type": "NEW_EMERGENCY",
@@ -91,13 +95,8 @@ async def create_emergencia(emergencia: schemas.EmergenciaCreate, db: Session = 
     
     return db_emergencia
 
-@router.get("/espera", response_model=List[schemas.EmergenciaResponse])
-def get_emergencias_espera(db: Session = Depends(get_db)):
-    # Los talleres consultan las emergencias que están esperando
-    return db.query(models.Emergencia).filter(models.Emergencia.estado == models.EstadoEmergencia.espera).all()
-
 @router.post("/{nro}/aceptar", response_model=schemas.EmergenciaResponse)
-async def aceptar_emergencia(nro: int, req: schemas.AceptarEmergenciaRequest, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
+async def aceptar_emergencia(fastapi_request: Request, nro: int, req: schemas.AceptarEmergenciaRequest, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
     if current_user.rol.value not in ["admin_taller", "personal_taller"]:
         raise HTTPException(status_code=403, detail="Solo taller puede aceptar")
 
@@ -122,13 +121,12 @@ async def aceptar_emergencia(nro: int, req: schemas.AceptarEmergenciaRequest, db
     emergencia.estado = models.EstadoEmergencia.atendiendo
     
     # --- MENSAJE AUTOMÁTICO ---
-    # Buscamos el nombre del personal para el mensaje
     personal_obj = db.query(PersonalTaller).filter(PersonalTaller.id == req.id_personal).first()
     nombre_mecanico = personal_obj.nombre_completo if personal_obj else "un mecánico"
     
     mensaje_auto = models.Mensajeria(
         nro_emergencia=nro,
-        id_remitente=taller_id, # Enviado por el Taller (Admin) para que aparezca a la derecha en su panel
+        id_remitente=taller_id,
         mensaje=f"¡Hola! Soy {nombre_mecanico}. He aceptado tu solicitud y voy en camino a ayudarte."
     )
     db.add(mensaje_auto)
@@ -136,6 +134,9 @@ async def aceptar_emergencia(nro: int, req: schemas.AceptarEmergenciaRequest, db
 
     db.commit()
     db.refresh(emergencia)
+
+    # Registrar en bitácora
+    registrar_evento(db, fastapi_request, "Emergencia Aceptada", f"Taller ID {taller_id} aceptó la emergencia Nro {nro}. Mecánico asignado: {nombre_mecanico}", usuario=current_user, id_taller=taller_id)
 
     # Notificar al cliente
     vehiculo = db.query(Vehiculo).filter(Vehiculo.id == emergencia.id_vehiculo).first()
@@ -151,7 +152,7 @@ async def aceptar_emergencia(nro: int, req: schemas.AceptarEmergenciaRequest, db
     return emergencia
 
 @router.post("/{nro}/completar", response_model=schemas.EmergenciaResponse)
-async def completar_emergencia(nro: int, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
+async def completar_emergencia(nro: int, fastapi_request: Request, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
     if current_user.rol.value not in ["admin_taller", "personal_taller"]:
         raise HTTPException(status_code=403, detail="Solo taller puede completar")
 
@@ -162,6 +163,10 @@ async def completar_emergencia(nro: int, db: Session = Depends(get_db), current_
     emergencia.estado = models.EstadoEmergencia.terminado
     db.commit()
     db.refresh(emergencia)
+
+    # Registrar en bitácora
+    taller_id = emergencia.id_taller
+    registrar_evento(db, fastapi_request, "Emergencia Finalizada", f"Servicio completado para emergencia Nro {nro}", usuario=current_user, id_taller=taller_id)
 
     # Notificar al cliente
     vehiculo = db.query(Vehiculo).filter(Vehiculo.id == emergencia.id_vehiculo).first()
@@ -177,7 +182,7 @@ async def completar_emergencia(nro: int, db: Session = Depends(get_db), current_
     return emergencia
 
 @router.patch("/{nro}/estado", response_model=schemas.EmergenciaResponse)
-async def actualizar_estado_generico(nro: int, req: schemas.EstadoUpdateRequest, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
+async def actualizar_estado_generico(nro: int, req: schemas.EstadoUpdateRequest, fastapi_request: Request, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
     if current_user.rol.value not in ["admin_taller", "personal_taller"]:
         raise HTTPException(status_code=403, detail="Solo el taller puede cambiar el estado")
 
@@ -185,9 +190,11 @@ async def actualizar_estado_generico(nro: int, req: schemas.EstadoUpdateRequest,
     if not emergencia:
         raise HTTPException(status_code=404, detail="Emergencia no encontrada")
 
+    estado_anterior = emergencia.estado.value if hasattr(emergencia.estado, 'value') else emergencia.estado
     emergencia.estado = req.estado
     
     # --- NUEVO: Si cambian el estado a atendiendo por aquí, aseguramos que tenga id_taller ---
+    taller_id = emergencia.id_taller
     if req.estado == "atendiendo" and emergencia.id_taller is None:
         taller_id = current_user.id
         if current_user.rol.value == "personal_taller":
@@ -202,6 +209,9 @@ async def actualizar_estado_generico(nro: int, req: schemas.EstadoUpdateRequest,
 
     db.commit()
     db.refresh(emergencia)
+
+    # Registrar en bitácora
+    registrar_evento(db, fastapi_request, "Cambio de Estado", f"Emergencia Nro {nro} cambió de {estado_anterior} a {req.estado}", usuario=current_user, id_taller=taller_id)
 
     # Notificar al cliente vía WebSocket que su estado cambió
     vehiculo = db.query(Vehiculo).filter(Vehiculo.id == emergencia.id_vehiculo).first()

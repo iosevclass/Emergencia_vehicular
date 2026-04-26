@@ -48,7 +48,7 @@ def seed_database():
             nit="987654321",
             ciudad="Santa Cruz",
             direccion="Calle Falsa 123",
-            foto_perfil="https://res.cloudinary.com/demo/image/upload/v1234567/taller_test.jpg",
+            foto_perfil="https://res.cloudinary.com/dh8zaedgv/image/upload/v1777239418/1064c26b-8665-40dc-912e-0d722168e398.png",
             latitud=-17.7833,
             longitud=-63.1821
         )

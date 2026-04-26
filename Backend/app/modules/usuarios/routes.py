@@ -60,7 +60,7 @@ def register_taller(obj_in: TallerCreate, db: Session = Depends(get_db)):
         print(f"ERROR REAL: {e}") # Mira esto en la terminal de VS Code
         raise HTTPException(status_code=500, detail=str(e))'''
 @router.post("/register-taller", status_code=status.HTTP_201_CREATED)
-def register_taller(obj_in: TallerCreate, db: Session = Depends(get_db)):
+def register_taller(obj_in: TallerCreate, fastapi_request: Request, db: Session = Depends(get_db)):
     # 1. Verificar si el email ya existe
     user_exists = db.query(Usuario).filter(Usuario.email == obj_in.email).first()
     if user_exists:
@@ -69,6 +69,10 @@ def register_taller(obj_in: TallerCreate, db: Session = Depends(get_db)):
     try:
         # 2. Llamar al servicio que acabamos de crear
         nuevo_taller = create_taller_service(db, obj_in)
+        
+        # Registrar en bitácora
+        registrar_evento(db, fastapi_request, "Registro de Taller", f"Nuevo taller registrado: {obj_in.nombre_taller} ({obj_in.email})")
+        
         return {"message": "Taller registrado exitosamente", "id": nuevo_taller.id}
     except Exception as e:
         print(f"ERROR EN REGISTRO: {e}")

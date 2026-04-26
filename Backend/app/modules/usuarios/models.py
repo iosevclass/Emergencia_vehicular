@@ -7,6 +7,7 @@ class UserRole(enum.Enum):
     ADMIN_TALLER = "admin_taller"
     PERSONAL_TALLER = "personal_taller"
     CLIENTE = "cliente"
+    ADMIN_SISTEMA = "admin_sistema"
 
 class Usuario(Base):
     __tablename__ = "usuarios"
