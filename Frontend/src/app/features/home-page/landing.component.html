@@ -1,0 +1,131 @@
+<div class="relative min-h-screen w-full bg-slate-50 overflow-x-hidden">
+
+  <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+    <div class="bubble b1"></div>
+    <div class="bubble b2"></div>
+    <div class="bubble b3"></div>
+  </div>
+
+  <main class="relative z-10">
+    
+    <nav class="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-xl shadow-sm">
+      <div class="flex justify-between items-center w-full px-8 py-4 max-w-7xl mx-auto">
+        <div class="text-2xl font-extrabold text-slate-900 tracking-tighter font-headline">
+          EMERGENCIA VEHICULAR
+        </div>
+        <div class="hidden md:flex items-center gap-8 font-semibold tracking-tight">
+          <a class="text-slate-600 hover:text-slate-900" href="#servicios">Servicios</a>
+          <a class="text-slate-600 hover:text-slate-900" href="#talleres">Talleres</a>
+          <a class="text-slate-600 hover:text-slate-900" href="#soporte">Buen Servicio</a>
+        </div>
+        <button (click)="goToLogin()"
+          class="bg-primary text-white px-6 py-2.5 rounded-lg font-bold hover:shadow-lg transition-all">
+          Acceso Taller
+        </button>
+      </div>
+    </nav>
+
+    <section class="relative min-h-screen flex items-center pt-20 overflow-hidden bg-transparent">
+    <div class="relative z-10 max-w-7xl mx-auto px-8 w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        
+        <div class="max-w-3xl">
+        <div class="inline-flex items-center gap-2 px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-bold mb-6 tracking-wider uppercase">
+            <span class="material-symbols-outlined text-sm">security</span>
+            Sentinel System Active
+        </div>
+        <h1 class="text-6xl md:text-7xl font-bold leading-[1.1] text-slate-900 mb-8 tracking-tighter">
+            Respuesta Inmediata en el Momento que <span class="text-primary">Más lo Necesitas</span>
+        </h1>
+        <p class="text-xl text-slate-600 mb-10 max-w-xl leading-relaxed">
+            Elevando la seguridad vial mediante precisión algorítmica y gestión en tiempo real.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4">
+            <button (click)="goToLogin()" class="bg-primary text-white px-8 py-4 rounded-xl font-bold text-lg hover:shadow-2xl transition-all">
+            Ingresar al Taller
+            </button>
+            <button (click)="downloadApp()" class="bg-white text-slate-900 px-8 py-4 rounded-xl font-bold text-lg hover:bg-slate-100 transition-all">
+            Descargar App Cliente
+            </button>
+        </div>
+        </div>
+
+        <div class="hidden lg:flex justify-center items-center">
+        <div class="pulse-tracker w-64 h-64 rounded-full bg-red-100 flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary text-[10rem] drop-shadow-md">
+            location_on
+            </span>
+        </div>
+        </div>
+
+    </div>
+    </section>
+
+    <section class="py-32 bg-white/40 backdrop-blur-sm" id="talleres">
+      <div class="max-w-7xl mx-auto px-8">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+          <div class="max-w-2xl">
+            <h2 class="text-4xl md:text-5xl font-bold mb-6 tracking-tight">Emergencia Vehicular </h2>
+            <p class="text-slate-600 text-lg">La suite definitiva para talleres de alto rendimiento en la web.</p>
+          </div>
+          <button (click)="goToLogin()" class="bg-secondary text-white px-8 py-4 rounded-xl font-bold hover:shadow-xl transition-all">
+            Acceso Terminal Taller
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-2">
+          <div class="md:col-span-8 bg-white/80 rounded-3xl p-8 shadow-sm relative overflow-hidden border border-white">
+            <h4 class="text-2xl font-bold mb-2">Mensajeria Directa y localizacion</h4>
+            <p class="text-slate-500 mb-6">Gestiona emergencias directamente desde tu navegador.</p>
+            <div class="mt-8 rounded-x3 overflow-hidden border-8 border-slate-100">
+               <img src="images/mecanic_image.jpg" rounded-3xl 
+                alt="Dashboard de Emergencia Vehicular" 
+                class="w-full rounded-3xl hover:scale-[1.02] transition-transform duration-500">
+            </div>
+          </div>
+          <div class="md:col-span-4 bg-secondary text-white rounded-3xl p-8 flex flex-col justify-between self-end ">
+            <span class="material-symbols-outlined text-5xl">analytics</span>
+            <h4 class="text-2xl font-bold mb-2">Mejora tu Taller</h4>
+            <div class="text-5xl font-bold opacity-20">Servicio Rapido</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="py-32 bg-transparent overflow-hidden">
+      <div class="max-w-7xl mx-auto px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
+          <div class="lg:order-2">
+            <h2 class="text-4xl md:text-6xl font-extrabold mb-8 leading-tight">La Tranquilidad en tu Bolsillo</h2>
+            <p class="text-xl text-slate-600 mb-10">Si eres conductor, descarga nuestra App para solicitar asistencia inmediata con un solo toque.</p>
+            <div class="flex flex-wrap gap-4">
+              <button (click)="downloadApp()" class="bg-slate-900 text-white px-8 py-4 rounded-xl flex items-center gap-3 hover:bg-slate-800 transition-all">
+                <span class="material-symbols-outlined">play_arrow</span>
+                <div class="text-left">
+                  <div class="text-[10px] uppercase font-bold opacity-60">Presiona aqui</div>
+                  <div class="text-lg font-bold">Descarga Aqui la App para clientes</div>
+                </div>
+              </button>
+            </div>
+          </div>
+          <div class="relative lg:order-1">
+            <div class="mx-auto w-[300px] h-[600px] bg-slate-900 rounded-[3rem] p-4 border-[10px] border-slate-900 shadow-2xl relative overflow-hidden">
+                <div class="bg-primary p-6 text-white text-center rounded-t-2xl">
+                    <div class="text-lg font-bold">Respuesta Activa</div>
+                </div>
+                <div class="p-4 bg-white h-full">
+                    <div class="pulse-tracker w-16 h-16 mx-auto mt-20 rounded-full bg-red-100 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary text-3xl">location_on</span>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="bg-white/60 border-t py-12 text-center text-slate-500 backdrop-blur-md">
+      <p>© 2026 Emergencia Vehicular. Todos los derechos reservados.</p>
+    </footer>
+
+  </main>
+</div>
