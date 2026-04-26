@@ -29,6 +29,7 @@ class AceptarEmergenciaRequest(BaseModel):
 
 class EstadoUpdateRequest(BaseModel):
     estado: str
+    estado: str
 
 # --- Schemas de Mensajería ---
 # 1. Lo que recibimos cuando el Cliente o el Taller envían un mensaje
@@ -50,3 +51,10 @@ class MensajeResponse(BaseModel):
 # 3. Schema opcional por si necesitas actualizar estados de lectura masivos
 class MarcarLeidosRequest(BaseModel):
     id_remitente_a_marcar: int
+
+class ReporteEmergenciaResponse(BaseModel):
+    etiqueta: str # Puede ser "2026-04-25" (Día) o "2026-04" (Mes)
+    total: int
+
+    class Config:
+        from_attributes = True

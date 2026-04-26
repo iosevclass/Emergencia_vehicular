@@ -16,6 +16,12 @@ export class HomeComponent implements OnInit {
   private emergenciaWs = inject(EmergenciaWsService);
   
   tallerNombre: string = 'Taller';
+  userRole: string = ''; // Nueva propiedad para almacenar el rol
+
+  // Getter para verificar fácilmente en el HTML si es el Admin del Sistema
+  get isAdminSistema(): boolean {
+    return this.userRole === 'admin_sistema';
+  }
 
   ngOnInit() {
     this.cargarDatosPerfil();
@@ -27,7 +33,10 @@ export class HomeComponent implements OnInit {
     if (userDataJson) {
       try {
         const userData = JSON.parse(userDataJson);
-        this.tallerNombre = userData.nombre || 'Taller';
+        // Si es Admin, tal vez en el backend se llame nombre_completo según tu modelo Administrador
+        this.tallerNombre = userData.nombre || userData.nombre_completo || 'Usuario'; 
+        this.userRole = userData.rol || ''; // Capturamos el rol que viene de FastAPI
+        
       } catch (error) {
         console.error('Error al parsear user_data:', error);
       }
@@ -41,3 +50,4 @@ export class HomeComponent implements OnInit {
     this.router.navigate(['/login']);
   }
 }
+
