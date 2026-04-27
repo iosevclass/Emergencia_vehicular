@@ -29,6 +29,8 @@ export class DashboardComponent implements OnInit {
   emergenciaSeleccionada = signal<any | null>(null);
   personalSeleccionadoId = signal<number | null>(null);
   distanciaCalculada = signal<string | null>(null);
+  diagnosticoAnimado = signal<string>('');
+  typingInProgress = signal<boolean>(false);
   
   tallerLat: number = 0;
   tallerLon: number = 0;
@@ -38,6 +40,7 @@ export class DashboardComponent implements OnInit {
   personalForm: FormGroup;
   fotoPreview = signal<string | null>(null);
   subiendoFoto = signal<boolean>(false);
+  private typingInterval: any;
 
   constructor() {
     this.personalForm = this.fb.group({
@@ -53,12 +56,33 @@ export class DashboardComponent implements OnInit {
   ngOnInit() {
     this.cargarDatosPerfil();
     this.cargarPersonal();
+    this.cargarEmergenciasPendientes();
 
     this.emergenciaWs.emergencias$.subscribe((msg) => {
       if (msg.type === 'NEW_EMERGENCY') {
         this.emergenciasPendientes.update((emergencias) => [msg.data, ...emergencias]);
         this.serviciosPendientes = this.emergenciasPendientes().length;
       }
+    });
+  }
+
+  cargarEmergenciasPendientes() {
+    this.http.get<any[]>(`${environment.apiUrl}/emergencias/espera`).subscribe({
+      next: (data) => {
+        // Mapear los datos del backend al formato que espera el frontend (data del WS)
+        const mapeadas = data.map(e => ({
+          nro: e.nro,
+          ubicacion_real: e.ubicacion_real,
+          descripcion: e.descripcion,
+          fotos: e.fotos,
+          vehiculo: e.vehiculo ? `${e.vehiculo.marca} ${e.vehiculo.modelo} (${e.vehiculo.placa})` : 'Vehículo desconocido',
+          diagnostico_ia: e.diagnostico_ia,
+          prioridad: e.prioridad
+        }));
+        this.emergenciasPendientes.set(mapeadas);
+        this.serviciosPendientes = mapeadas.length;
+      },
+      error: (err) => console.error('Error al cargar emergencias en espera:', err)
     });
   }
 
@@ -126,6 +150,15 @@ export class DashboardComponent implements OnInit {
   abrirDetalleEmergencia(emergencia: any) {
     this.emergenciaSeleccionada.set(emergencia);
     this.personalSeleccionadoId.set(null);
+
+    // Iniciar efecto typewriter si hay diagnóstico
+    if (emergencia.diagnostico_ia) {
+      this.iniciarTypewriter(emergencia.diagnostico_ia);
+    } else {
+      this.diagnosticoAnimado.set('');
+      this.typingInProgress.set(false);
+    }
+
     if (emergencia.ubicacion_real && emergencia.ubicacion_real.includes(',')) {
       const coordenadas = emergencia.ubicacion_real.split(',');
       const lat = parseFloat(coordenadas[0].trim());
@@ -141,9 +174,28 @@ export class DashboardComponent implements OnInit {
   }
 
   cerrarDetalleEmergencia() {
+    if (this.typingInterval) clearInterval(this.typingInterval);
+    this.diagnosticoAnimado.set('');
+    this.typingInProgress.set(false);
     this.mostrarModalDetalle.set(false);
     this.emergenciaSeleccionada.set(null);
     this.personalSeleccionadoId.set(null);
+  }
+
+  iniciarTypewriter(text: string) {
+    if (this.typingInterval) clearInterval(this.typingInterval);
+    this.diagnosticoAnimado.set('');
+    this.typingInProgress.set(true);
+    let index = 0;
+    this.typingInterval = setInterval(() => {
+      if (index < text.length) {
+        this.diagnosticoAnimado.update(current => current + text[index]);
+        index++;
+      } else {
+        clearInterval(this.typingInterval);
+        this.typingInProgress.set(false);
+      }
+    }, 15); // Velocidad de escritura
   }
 
   seleccionarPersonal(event: any) {

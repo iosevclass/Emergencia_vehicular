@@ -226,7 +226,14 @@
       <div class="flex justify-between items-start mb-6">
         <div>
           <h3 class="text-xl font-black text-slate-800 italic">Misión de Rescate</h3>
-          <p class="text-[10px] text-red-500 font-bold uppercase tracking-widest">Prioridad Alta</p>
+          <p 
+            [class.text-red-500]="emergenciaSeleccionada()?.prioridad === 'alta'"
+            [class.text-orange-500]="emergenciaSeleccionada()?.prioridad === 'media'"
+            [class.text-blue-500]="emergenciaSeleccionada()?.prioridad === 'baja'"
+            class="text-[10px] font-bold uppercase tracking-widest"
+          >
+            Prioridad {{ emergenciaSeleccionada()?.prioridad || 'Baja' }}
+          </p>
         </div>
       </div>
       <a [href]="'https://www.google.com/maps/search/?api=1&query=' + emergenciaSeleccionada()?.ubicacion_real" target="_blank" class="w-full h-44 bg-blue-50 rounded-[2rem] overflow-hidden mb-6 relative border-4 border-white shadow-sm flex items-center justify-center group transition-all hover:bg-blue-100">
@@ -273,6 +280,23 @@
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
+      
+      <!-- NUEVO: Bloque de Diagnóstico IA (Grok & Gemini) -->
+      <div *ngIf="emergenciaSeleccionada()?.diagnostico_ia" class="mb-6 bg-indigo-50/50 border border-indigo-100 p-6 rounded-[2rem] relative overflow-hidden">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-indigo-100/50 rounded-full blur-2xl"></div>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="material-symbols-outlined text-indigo-600 text-lg animate-pulse">psychology</span>
+          <p class="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Análisis IA (Groq & Gemini)</p>
+        </div>
+        
+        <div class="relative">
+          <p class="text-sm font-medium text-slate-700 leading-relaxed italic">
+            {{ diagnosticoAnimado() }}
+            <span *ngIf="typingInProgress()" class="inline-block w-1.5 h-4 bg-indigo-600 ml-1 animate-pulse align-middle"></span>
+          </p>
+        </div>
+      </div>
+
       <h4 class="text-lg font-black text-slate-800 mb-2">Asignar Personal</h4>
       <p class="text-xs text-slate-500 mb-8">Selecciona el mecánico de tu equipo que atenderá esta emergencia.</p>
       <div class="flex-grow">

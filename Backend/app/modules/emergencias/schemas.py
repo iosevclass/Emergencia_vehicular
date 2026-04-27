@@ -2,6 +2,8 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 
+from app.modules.vehiculos.schemas import VehiculoResponse
+
 class EmergenciaCreate(BaseModel):
     id_vehiculo: int
     ubicacion_real: str
@@ -21,6 +23,7 @@ class EmergenciaResponse(BaseModel):
     id_vehiculo: int
     id_taller: Optional[int] = None
     id_personal: Optional[int] = None
+    vehiculo: Optional[VehiculoResponse] = None
 
     class Config:
         from_attributes = True

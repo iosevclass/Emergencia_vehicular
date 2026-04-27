@@ -9,6 +9,8 @@ export interface EmergenciaNotificacion {
     descripcion: string;
     fotos: string[] | null;
     vehiculo: string;
+    diagnostico_ia?: string;
+    prioridad?: string;
   };
 }
 
