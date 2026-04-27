@@ -24,7 +24,8 @@ class Emergencia(Base):
     fotos = Column(JSON, nullable=True) 
     audio = Column(String, nullable=True) 
     descripcion = Column(String(500))
-    
+    # --- NUEVO CAMPO PARA LA IA ---
+    diagnostico_ia = Column(String(2000), nullable=True, comment="Diagnóstico y evaluación generada por IA")
     prioridad = Column(SQLEnum(PrioridadEmergencia), default=PrioridadEmergencia.media)
     estado = Column(SQLEnum(EstadoEmergencia), default=EstadoEmergencia.espera)
     

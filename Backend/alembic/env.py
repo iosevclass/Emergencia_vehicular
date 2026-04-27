@@ -10,10 +10,10 @@ sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '..'
 from alembic import context
 
 from app.core.database import DATABASE_URL,Base # Importa la URL de la base de datos antes base
-from app.modules.usuarios.models import Usuario, Cliente, Taller, PersonalTaller
+from app.modules.usuarios.models import Usuario, Cliente, Taller, PersonalTaller,CalificacionTaller,Administrador
 from app.modules.vehiculos.models import Vehiculo
 from app.modules.emergencias.models import Emergencia, DetalleEmergencia, Mensajeria
-
+from app.modules.bitacora.models import Bitacora
 
 
 # this is the Alembic Config object, which provides

@@ -10,7 +10,69 @@ from app.modules.vehiculos.models import Vehiculo
 from app.modules.emergencias.websockets import manager
 from app.modules.bitacora.utils import registrar_evento
 
+from app.modules.emergencias.ai_service import analizar_emergencia_con_ia
+import asyncio
+
 router = APIRouter(prefix="/emergencias", tags=["emergencias"])
+
+
+@router.post("/", response_model=schemas.EmergenciaResponse)
+async def create_emergencia(emergencia: schemas.EmergenciaCreate, fastapi_request: Request, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
+    if current_user.rol.value != "cliente":
+        raise HTTPException(status_code=403, detail="Solo clientes pueden solicitar emergencias")
+        
+    # Validar que el vehiculo le pertenece
+    vehiculo = db.query(Vehiculo).filter(Vehiculo.id == emergencia.id_vehiculo, Vehiculo.cliente_id == current_user.id).first()
+    if not vehiculo:
+        raise HTTPException(status_code=404, detail="Vehículo no encontrado o no pertenece al cliente")
+
+    # 1. Crear y guardar la emergencia BÁSICA inmediatamente
+    db_emergencia = models.Emergencia(
+        id_vehiculo=emergencia.id_vehiculo,
+        ubicacion_real=emergencia.ubicacion_real,
+        descripcion=emergencia.descripcion,
+        prioridad=emergencia.prioridad,
+        fotos=emergencia.fotos
+    )
+    db.add(db_emergencia)
+    db.commit()
+    db.refresh(db_emergencia)
+    
+    # 2. Registrar en bitácora
+    registrar_evento(db, fastapi_request, "Solicitud de Emergencia", f"Cliente {current_user.email} solicitó ayuda para vehículo {vehiculo.placa}", usuario=current_user)
+
+    # --- NUEVO: LLAMADA A LA IA ---
+    # Llamamos a la IA sin bloquear eternamente. Si tarda mucho, el timeout del servicio saltará.
+    diagnostico, prioridad_sugerida = await analizar_emergencia_con_ia(db_emergencia.descripcion, db_emergencia.fotos)
+    
+    # Actualizamos la base de datos con los resultados de la IA
+    db_emergencia.diagnostico_ia = diagnostico
+    
+    # Validamos que la prioridad devuelta por la IA sea correcta según tu Enum
+    if prioridad_sugerida in [p.value for p in models.PrioridadEmergencia]:
+        db_emergencia.prioridad = prioridad_sugerida
+
+    db.commit()
+    db.refresh(db_emergencia)
+    # ------------------------------
+
+    # 3. Broadcast a todos los talleres (Ahora incluye los datos de la IA)
+    await manager.broadcast_to_talleres({
+        "type": "NEW_EMERGENCY",
+        "data": {
+            "nro": db_emergencia.nro,
+            "ubicacion_real": db_emergencia.ubicacion_real,
+            "descripcion": db_emergencia.descripcion,
+            "fotos": db_emergencia.fotos,
+            "vehiculo": f"{vehiculo.marca} {vehiculo.modelo} ({vehiculo.placa})",
+            # Añadimos los campos de la IA al WebSocket del frontend de Angular
+            "diagnostico_ia": db_emergencia.diagnostico_ia,
+            "prioridad": db_emergencia.prioridad.value if hasattr(db_emergencia.prioridad, 'value') else db_emergencia.prioridad
+        }
+    })
+    
+    return db_emergencia
+
 
 # ---- WEBSOCKETS ----
 @router.websocket("/ws/taller")
