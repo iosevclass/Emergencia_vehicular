@@ -4,7 +4,7 @@ from typing import List
 
 from app.core.database import get_db
 from app.api.auth import get_current_user
-from app.modules.usuarios.models import Usuario, UserRole, Cliente, PersonalTaller
+from app.modules.usuarios.models import Usuario, UserRole, Cliente, PersonalTaller,CalificacionTaller
 from app.modules.emergencias import models, schemas
 from app.modules.vehiculos.models import Vehiculo
 from app.modules.emergencias.websockets import manager
@@ -398,3 +398,41 @@ def obtener_lista_chats_activos(
         
        
     return resultado
+# --- Endpoint de Calificación ---
+from app.modules.usuarios.models import CalificacionTaller
+from sqlalchemy import Float
+
+@router.post("/{nro}/calificar")
+def calificar_emergencia(
+    nro: int, 
+    req: schemas.CalificarEmergenciaRequest, 
+    db: Session = Depends(get_db), 
+    current_user: Usuario = Depends(get_current_user)
+):
+    # 1. Validar que sea cliente
+    if current_user.rol.value != "cliente":
+        raise HTTPException(status_code=403, detail="Solo el cliente puede calificar")
+
+    # 2. Buscar la emergencia
+    emergencia = db.query(models.Emergencia).filter(models.Emergencia.nro == nro).first()
+    if not emergencia:
+        raise HTTPException(status_code=404, detail="Emergencia no encontrada")
+
+    # 3. Validar que la emergencia pertenezca al usuario
+    if emergencia.vehiculo.cliente_id != current_user.id:
+        raise HTTPException(status_code=403, detail="No puedes calificar una emergencia que no es tuya")
+
+    # 4. Registrar la calificación
+    nueva_calificacion = CalificacionTaller(
+        cliente_id=current_user.id,
+        taller_id=emergencia.id_taller,
+        emergencia_id=emergencia.nro,
+        puntuacion=req.puntuacion,
+        comentario=req.comentario
+    )
+    
+    db.add(nueva_calificacion)
+    db.commit()
+    db.refresh(nueva_calificacion)
+    
+    return {"message": "Calificación registrada correctamente"}

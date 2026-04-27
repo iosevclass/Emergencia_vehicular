@@ -58,3 +58,8 @@ class ReporteEmergenciaResponse(BaseModel):
 
     class Config:
         from_attributes = True
+class CalificarEmergenciaRequest(BaseModel):
+    puntuacion: float
+    comentario: Optional[str] = None
+    class Config:
+        from_attributes = True

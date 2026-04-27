@@ -23,6 +23,6 @@ export class LandingComponent {
 
   // Aquí pondrás el link de descarga de la App más tarde
   downloadApp() {
-    window.open('https://tu-url-de-descarga.com', '_blank');
+    window.open('https://drive.google.com/uc?export=download&id=1gwWtu8LXcpxAe4wBMWDwN77bcvL5v7zh', '_blank');
   }
 }

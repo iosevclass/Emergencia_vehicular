@@ -11,3 +11,4 @@ class ReporteUsuarioDetalle(BaseModel):
 
     class Config:
         from_attributes = True
+
