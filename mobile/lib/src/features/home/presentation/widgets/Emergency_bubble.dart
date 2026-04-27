@@ -7,6 +7,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 final String _baseUrl = dotenv.env['API_URL'] ?? 'http://192.168.1.15:8000';
 
@@ -41,11 +42,24 @@ class _EmergencyBubbleState extends State<EmergencyBubble> {
   final ImagePicker _picker = ImagePicker();
   List<File> _fotosTomadas = [];
   bool _isUploadingFotos = false;
-
+  // --- NUEVO: Variables para Speech-to-Text ---
+  final stt.SpeechToText _speechToText = stt.SpeechToText();
+  bool _speechEnabled = false;
+  String _lastWords = '';
   @override
   void initState() {
     super.initState();
     _vehiculoSeleccionado = widget.idVehiculoSeleccionado;
+    _initSpeech(); // --- NUEVO ---
+  }
+
+  // --- NUEVO: Función para inicializar el micrófono ---
+  void _initSpeech() async {
+    _speechEnabled = await _speechToText.initialize(
+      onError: (val) => print('Error en S2T: $val'),
+      onStatus: (val) => print('Estado S2T: $val'),
+    );
+    setState(() {});
   }
 
   // 1. Obtener vehículos del usuario
@@ -252,6 +266,30 @@ class _EmergencyBubbleState extends State<EmergencyBubble> {
     }
   }
 
+  // --- NUEVO: Iniciar escucha ---
+  // Recibe setModalState para poder actualizar la UI del BottomSheet (cambiar el ícono a rojo)
+  void _startListening(StateSetter setModalState) async {
+    await _speechToText.listen(
+      onResult: (result) {
+        setModalState(() {
+          // Actualizamos el campo de texto con lo que va escuchando
+          _descripcionController.text = result.recognizedWords;
+          // Coloca el cursor al final del texto
+          _descripcionController.selection = TextSelection.fromPosition(
+            TextPosition(offset: _descripcionController.text.length)
+          );
+        });
+      },
+      localeId: 'es_ES', // Fuerza el idioma a español (puedes ajustarlo si prefieres otro)
+    );
+    setModalState(() {});
+  }
+
+  // --- NUEVO: Detener escucha ---
+  void _stopListening(StateSetter setModalState) async {
+    await _speechToText.stop();
+    setModalState(() {});
+  }
   void _showEmergencySheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -341,19 +379,43 @@ class _EmergencyBubbleState extends State<EmergencyBubble> {
 
                     const SizedBox(height: 16),
 
+                    // --- MODIFICADO: TextField con botón de micrófono ---
                     TextField(
-                      controller:
-                          _descripcionController, // Añadido el controlador
+                      controller: _descripcionController,
                       maxLines: 3,
                       decoration: InputDecoration(
-                        hintText: '¿Qué le ocurrió a tu vehículo?',
+                        hintText: _speechToText.isListening 
+                            ? 'Escuchando...' 
+                            : '¿Qué le ocurrió a tu vehículo?',
                         filled: true,
-                        fillColor: Colors
-                            .grey
-                            .shade200, // Ajuste de color para que se vea el texto
+                        fillColor: Colors.grey.shade200,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
+                        ),
+                        // Añadimos el ícono del micrófono a la derecha
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _speechToText.isListening ? Icons.mic : Icons.mic_none,
+                            color: _speechToText.isListening ? Colors.red : Colors.grey.shade600,
+                            size: 28,
+                          ),
+                          onPressed: () {
+                            // Verificamos si los permisos fueron concedidos
+                            if (!_speechEnabled) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('El reconocimiento de voz no está disponible.')),
+                              );
+                              return;
+                            }
+                            
+                            // Alternar entre escuchar y detener
+                            if (_speechToText.isNotListening) {
+                              _startListening(setModalState);
+                            } else {
+                              _stopListening(setModalState);
+                            }
+                          },
                         ),
                       ),
                     ),
