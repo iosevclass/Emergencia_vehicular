@@ -23,6 +23,9 @@ export interface Emergencia {
 })
 export class EmergenciasTallerComponent implements OnInit {
   private emergenciaService = inject(EmergenciaService);
+  
+  userRole = signal<string>('');
+
   // Usando signals (puedes adaptarlo a variables normales si usas versiones anteriores)
   // 3. Puedes dejarlo vacío al inicio o con los datos de prueba
   emergencias = signal<Emergencia[]>([]);
@@ -41,7 +44,22 @@ export class EmergenciasTallerComponent implements OnInit {
     cancelado: [], // No se mueve más
   };
   ngOnInit() {
-    this.cargarEmergencias(); // 4. Llama a la carga al iniciar
+    this.cargarDatosPerfil();
+    if (this.userRole() !== 'admin_sistema') {
+      this.cargarEmergencias();
+    }
+  }
+
+  private cargarDatosPerfil() {
+    const userDataJson = localStorage.getItem('user_data');
+    if (userDataJson) {
+      try {
+        const userData = JSON.parse(userDataJson);
+        this.userRole.set(userData.rol || '');
+      } catch (error) {
+        console.error('Error al parsear user_data:', error);
+      }
+    }
   }
 
   cambiarEstado(nro: number, nuevoEstado: any) {

@@ -22,7 +22,9 @@ export class DashboardComponent implements OnInit {
   private emergenciaWs = inject(EmergenciaWsService);
   private http = inject(HttpClient);
 
+  userRole = signal<string>('');
   listaPersonal = signal<PersonalTaller[]>([]);
+  listaTalleres = signal<any[]>([]);
   emergenciasPendientes = signal<EmergenciaNotificacion['data'][]>([]);
   
   mostrarModalDetalle = signal<boolean>(false);
@@ -58,16 +60,28 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit() {
     this.cargarDatosPerfil();
-    this.cargarPersonal();
-    this.cargarEmergenciasPendientes();
-    this.cargarStats();
-    this.cargarReviews();
+    
+    if (this.userRole() === 'admin_sistema') {
+      this.cargarTalleres();
+    } else {
+      this.cargarPersonal();
+      this.cargarEmergenciasPendientes();
+      this.cargarStats();
+      this.cargarReviews();
 
-    this.emergenciaWs.emergencias$.subscribe((msg) => {
-      if (msg.type === 'NEW_EMERGENCY') {
-        this.emergenciasPendientes.update((emergencias) => [msg.data, ...emergencias]);
-        this.serviciosPendientes = this.emergenciasPendientes().length;
-      }
+      this.emergenciaWs.emergencias$.subscribe((msg) => {
+        if (msg.type === 'NEW_EMERGENCY') {
+          this.emergenciasPendientes.update((emergencias) => [msg.data, ...emergencias]);
+          this.serviciosPendientes = this.emergenciasPendientes().length;
+        }
+      });
+    }
+  }
+
+  cargarTalleres() {
+    this.http.get<any[]>(`${environment.apiUrl}/usuarios/lista-talleres`).subscribe({
+      next: (data) => this.listaTalleres.set(data),
+      error: (err) => console.error('Error al cargar talleres:', err)
     });
   }
 
@@ -117,6 +131,7 @@ export class DashboardComponent implements OnInit {
     if (userDataJson) {
       try {
         const userData = JSON.parse(userDataJson);
+        this.userRole.set(userData.rol || '');
         this.tallerLat = userData.latitud || -17.7833;
         this.tallerLon = userData.longitud || -63.1821;
       } catch (error) {

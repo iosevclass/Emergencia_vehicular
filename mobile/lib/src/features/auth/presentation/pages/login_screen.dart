@@ -173,7 +173,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                   const SizedBox(height: 24),
                                   Text(
-                                    'Kinetic Trust',
+                                    'Emergencia Vehicular',
                                     style: Theme.of(context)
                                         .textTheme
                                         .displayLarge
@@ -253,7 +253,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           horizontal: 16,
                                         ),
                                         child: Text(
-                                          'O ACCEDE CON',
+                                          'CONFIANZA Y SEGURIDAD',
                                           style: TextStyle(
                                             fontSize: 10,
                                             fontWeight: FontWeight.w600,
@@ -277,7 +277,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                             FontAwesomeIcons.google,
                                             size: 18,
                                           ),
-                                          label: const Text('Google'),
+                                          label: const Text('Flash'),
                                           style: OutlinedButton.styleFrom(
                                             foregroundColor:
                                                 AppColors.onSurface,
@@ -305,7 +305,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                             FontAwesomeIcons.apple,
                                             size: 20,
                                           ),
-                                          label: const Text('Apple'),
+                                          label: const Text('Disponible en ios'),
                                           style: OutlinedButton.styleFrom(
                                             foregroundColor:
                                                 AppColors.onSurface,

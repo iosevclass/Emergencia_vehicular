@@ -12,6 +12,7 @@ import { ChatService } from '../../core/services/chat.service';
 export class ChatComponent implements OnInit, OnDestroy {
   private chatService = inject(ChatService);
   
+  userRole = signal<string>('');
   // Usamos signals para asegurar que Angular detecte los cambios al instante
   chatsActivos = signal<any[]>([]);
   mensajes = signal<any[]>([]);
@@ -23,18 +24,35 @@ export class ChatComponent implements OnInit, OnDestroy {
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
 
   ngOnInit() {
-    this.obtenerMiId();
-    this.cargarChats();
-    this.chatService.conectarTaller();
-    
-    // Suscribirse a mensajes nuevos vía WebSocket
-    this.chatService.messages$.subscribe(payload => {
-      this.procesarMensajeWS(payload);
-    });
+    this.cargarDatosPerfil();
+    if (this.userRole() !== 'admin_sistema') {
+      this.obtenerMiId();
+      this.cargarChats();
+      this.chatService.conectarTaller();
+      
+      // Suscribirse a mensajes nuevos vía WebSocket
+      this.chatService.messages$.subscribe(payload => {
+        this.procesarMensajeWS(payload);
+      });
+    }
+  }
+
+  private cargarDatosPerfil() {
+    const userDataJson = localStorage.getItem('user_data');
+    if (userDataJson) {
+      try {
+        const userData = JSON.parse(userDataJson);
+        this.userRole.set(userData.rol || '');
+      } catch (error) {
+        console.error('Error al parsear user_data:', error);
+      }
+    }
   }
 
   ngOnDestroy() {
-    this.chatService.desconectar();
+    if (this.userRole() !== 'admin_sistema') {
+      this.chatService.desconectar();
+    }
   }
 
   obtenerMiId() {
@@ -48,7 +66,6 @@ export class ChatComponent implements OnInit, OnDestroy {
         }).join(''));
         const decoded = JSON.parse(jsonPayload);
         this.myId = decoded.sub ? parseInt(decoded.sub) : null;
-        console.log("✅ Mi ID decodificado del token:", this.myId);
       } catch (e) {
         console.error("❌ Error decodificando token", e);
       }
@@ -56,18 +73,15 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   cargarChats() {
-    console.log("⏳ Cargando chats activos...");
     this.chatService.getChatsActivos().subscribe({
       next: (chats) => {
         this.chatsActivos.set(chats);
-        console.log("📥 Chats activos cargados en el signal:", this.chatsActivos());
       },
       error: (err) => console.error("❌ Error al cargar chats activos:", err)
     });
   }
 
   seleccionarChat(chat: any) {
-    console.log("👉 Chat seleccionado:", chat);
     this.chatSeleccionado.set(chat);
     this.cargarHistorial(chat.nro_emergencia);
     this.marcarComoLeido(chat.nro_emergencia);
@@ -79,10 +93,8 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   cargarHistorial(nro: number) {
-    console.log(`⏳ Cargando historial para emergencia #${nro}...`);
     this.chatService.getHistorial(nro).subscribe(msgs => {
       this.mensajes.set(msgs);
-      console.log("📥 Mensajes cargados en el signal:", this.mensajes());
       this.scrollToBottom();
     });
   }
@@ -115,7 +127,6 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   procesarMensajeWS(payload: any) {
-    console.log("🔌 Mensaje recibido por WS:", payload);
     if (payload.type === 'NEW_MESSAGE') {
       const msg = payload.data;
 

@@ -453,7 +453,8 @@ def obtener_lista_chats_activos(
             "ultimo_mensaje": ultimo_msg.mensaje if ultimo_msg else "",
             "fecha_ultimo_mensaje": ultimo_msg.fecha_hora if ultimo_msg else e.fecha_creacion,
             "id_vehiculo": e.id_vehiculo,
-            "id_taller": e.id_taller
+            "id_taller": e.id_taller,
+            "nombre_cliente": e.vehiculo.dueno.nombre if e.vehiculo and e.vehiculo.dueno else "Cliente Desconocido"
         })
         
     return resultado

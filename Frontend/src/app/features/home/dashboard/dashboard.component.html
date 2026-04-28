@@ -1,165 +1,222 @@
 <div class="p-4 md:p-8 max-w-7xl mx-auto">
-  <!-- Stats Cards (Manteniendo diseño original) -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-    <div
-      class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-md transition-shadow"
-    >
-      <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">
-        Servicios Hoy
-      </p>
-      <div class="flex items-end gap-2">
-        <p class="text-4xl font-black text-primary">{{ serviciosPendientes }}</p>
-        <span class="text-green-500 text-xs font-bold mb-1">+2 hoy</span>
+  
+  <!-- DASHBOARD ADMIN SISTEMA -->
+  <ng-container *ngIf="userRole() === 'admin_sistema'; else tallerDashboard">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+        <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Total Talleres</p>
+        <div class="flex items-end gap-2">
+          <p class="text-4xl font-black text-primary">{{ listaTalleres().length }}</p>
+          <span class="text-green-500 text-xs font-bold mb-1">Activos</span>
+        </div>
+      </div>
+      <div class="bg-primary p-6 rounded-[2rem] shadow-lg shadow-primary/20 text-white flex flex-col justify-center">
+        <p class="text-white/70 text-xs font-bold uppercase tracking-wider">Panel Admin</p>
+        <p class="text-xl font-bold italic">Control Total</p>
       </div>
     </div>
-    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100">
-      <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">
-        Personal Activo
-      </p>
-      <p class="text-4xl font-black text-slate-800">{{ listaPersonal().length }}</p>
-    </div>
-    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100">
-      <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Calificación</p>
-      <p class="text-4xl font-black text-yellow-500">{{ promedioCalificacion() }} <span class="text-xl">★</span></p>
-      <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{{ totalVotos() }} votos</p>
-    </div>
-    <div
-      class="bg-primary p-6 rounded-[2rem] shadow-lg shadow-primary/20 text-white flex flex-col justify-center"
-    >
-      <p class="text-white/70 text-xs font-bold uppercase tracking-wider">Estado Sistema</p>
-      <p class="text-xl font-bold italic">Operativo</p>
-    </div>
-  </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-    <div class="lg:col-span-2 space-y-8">
-      <section>
-        <div class="flex justify-between items-center mb-6 px-2">
-          <h3 class="text-xl font-black text-slate-800 flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary">engineering</span>
-            Mi Personal
-          </h3>
-          <button
-            class="bg-primary text-white px-5 py-2.5 rounded-2xl text-sm font-bold flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/25"
-            (click)="abrirModal()"
-          >
-            <span class="material-symbols-outlined text-sm">person_add</span> Nuevo Miembro
-          </button>
-        </div>
+    <section>
+      <div class="flex items-center gap-2 mb-6 px-2">
+        <span class="material-symbols-outlined text-primary">store</span>
+        <h3 class="text-xl font-black text-slate-800">Nuestros Talleres Aliados</h3>
+      </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div
-            *ngFor="let persona of listaPersonal()"
-            class="bg-white p-5 rounded-[2rem] shadow-sm border border-slate-100 flex items-center gap-4 hover:border-primary/30 transition-colors group"
-          >
-            <div
-              class="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 overflow-hidden border border-slate-100"
-            >
-              <img
-                *ngIf="persona.foto_perfil"
-                [src]="persona.foto_perfil"
-                class="w-full h-full object-cover"
-              />
-              <span *ngIf="!persona.foto_perfil" class="material-symbols-outlined text-3xl"
-                >account_circle</span
-              >
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div *ngFor="let taller of listaTalleres()" class="bg-white rounded-[2.5rem] overflow-hidden shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1 group">
+          <div class="h-48 bg-slate-100 relative overflow-hidden">
+            <img *ngIf="taller.foto_perfil" [src]="taller.foto_perfil" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+            <div *ngIf="!taller.foto_perfil" class="w-full h-full flex items-center justify-center text-slate-300">
+              <span class="material-symbols-outlined text-6xl">storefront</span>
             </div>
-            <div class="flex-grow">
-              <h4 class="font-bold text-slate-800 group-hover:text-primary transition-colors">
-                {{ persona.nombre_completo }}
-              </h4>
-              <p class="text-xs font-medium text-slate-400 uppercase tracking-tighter">
-                {{ persona.cargo }}
-              </p>
-            </div>
-            <div class="flex flex-col items-end gap-2">
-              <span
-                [class]="
-                  persona.activo ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
-                "
-                class="text-[10px] px-2 py-1 rounded-lg font-black uppercase"
-              >
-                {{ persona.activo ? 'Activo' : 'Baja' }}
-              </span>
+            <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black uppercase text-primary shadow-sm">
+              {{ taller.ciudad || 'Ciudad' }}
             </div>
           </div>
-        </div>
-      </section>
-
-      <!-- SECCIÓN DE RESEÑAS RECIENTES -->
-      <section>
-        <div class="flex items-center gap-2 mb-6 px-2">
-          <span class="material-symbols-outlined text-yellow-500">reviews</span>
-          <h3 class="text-xl font-black text-slate-800">Reseñas Recientes</h3>
-        </div>
-
-        <div *ngIf="listaReviews().length === 0" class="bg-white p-10 rounded-[2rem] text-center border border-slate-100">
-          <p class="text-slate-400 font-bold italic">Aún no tienes reseñas de clientes.</p>
-        </div>
-
-        <div class="grid grid-cols-1 gap-4">
-          <div *ngFor="let review of listaReviews()" class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 hover:border-yellow-200 transition-colors">
-            <div class="flex justify-between items-start mb-4">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-                  <span class="material-symbols-outlined">person</span>
-                </div>
-                <div>
-                  <h4 class="font-bold text-slate-800">{{ review.cliente }}</h4>
-                  <p class="text-[10px] text-slate-400 uppercase font-black">{{ review.fecha | date:'dd MMM yyyy' }}</p>
-                </div>
+          <div class="p-6">
+            <h4 class="text-lg font-black text-slate-800 mb-1">{{ taller.nombre_taller }}</h4>
+            <div class="flex items-center gap-2 text-slate-400 mb-4">
+              <span class="material-symbols-outlined text-sm">location_on</span>
+              <p class="text-xs font-medium truncate">{{ taller.direccion || 'Sin dirección' }}</p>
+            </div>
+            
+            <div class="flex items-center justify-between pt-4 border-t border-slate-50">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-slate-400 text-sm">call</span>
+                <span class="text-xs font-bold text-slate-600">{{ taller.telefono || 'Sin tel.' }}</span>
               </div>
-              <div class="flex items-center gap-1 bg-yellow-50 px-3 py-1 rounded-full">
-                <span class="text-yellow-600 font-black text-sm">{{ review.puntuacion }}</span>
-                <span class="material-symbols-outlined text-yellow-500 text-sm">star</span>
-              </div>
+              <span class="bg-primary/10 text-primary text-[9px] font-black uppercase px-2 py-1 rounded-lg">NIT: {{ taller.nit || '---' }}</span>
             </div>
-            <p class="text-sm text-slate-600 font-medium italic">"{{ review.comentario || 'Sin comentario' }}"</p>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
+  </ng-container>
+
+  <!-- DASHBOARD TALLER (CONTENIDO ORIGINAL) -->
+  <ng-template #tallerDashboard>
+    <!-- Stats Cards (Manteniendo diseño original) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div
+        class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-md transition-shadow"
+      >
+        <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">
+          Servicios Hoy
+        </p>
+        <div class="flex items-end gap-2">
+          <p class="text-4xl font-black text-primary">{{ serviciosPendientes }}</p>
+          <span class="text-green-500 text-xs font-bold mb-1">+2 hoy</span>
+        </div>
+      </div>
+      <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100">
+        <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">
+          Personal Activo
+        </p>
+        <p class="text-4xl font-black text-slate-800">{{ listaPersonal().length }}</p>
+      </div>
+      <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100">
+        <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Calificación</p>
+        <p class="text-4xl font-black text-yellow-500">{{ promedioCalificacion() }} <span class="text-xl">★</span></p>
+        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{{ totalVotos() }} votos</p>
+      </div>
+      <div
+        class="bg-primary p-6 rounded-[2rem] shadow-lg shadow-primary/20 text-white flex flex-col justify-center"
+      >
+        <p class="text-white/70 text-xs font-bold uppercase tracking-wider">Estado Sistema</p>
+        <p class="text-xl font-bold italic">Operativo</p>
+      </div>
     </div>
 
-    <div class="space-y-6">
-      <div class="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100">
-        <h3 class="text-lg font-black text-slate-800 mb-6 flex items-center gap-2">
-          <span class="material-symbols-outlined text-red-500">notifications_active</span>
-          Alertas Recientes
-        </h3>
-
-        <div
-          *ngIf="emergenciasPendientes().length === 0"
-          class="flex flex-col items-center justify-center py-10 text-center"
-        >
-          <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-            <span class="material-symbols-outlined text-slate-200 text-4xl">check_circle</span>
-          </div>
-          <h4 class="text-slate-700 font-bold italic">Todo despejado</h4>
-        </div>
-
-        <div *ngIf="emergenciasPendientes().length > 0" class="space-y-4">
-          <div
-            *ngFor="let emer of emergenciasPendientes()"
-            class="bg-red-50 border border-red-100 p-4 rounded-2xl relative overflow-hidden group"
-          >
-            <div
-              class="absolute top-0 right-0 bg-red-500 text-white text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg"
-            >
-              NUEVA
-            </div>
-            <h4 class="font-black text-red-900 mb-1">Vehículo: {{ emer.vehiculo }}</h4>
-            <p class="text-sm text-red-800/80 font-medium mb-2">{{ emer.descripcion }}</p>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="lg:col-span-2 space-y-8">
+        <section>
+          <div class="flex justify-between items-center mb-6 px-2">
+            <h3 class="text-xl font-black text-slate-800 flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">engineering</span>
+              Mi Personal
+            </h3>
             <button
-              (click)="abrirDetalleEmergencia(emer)"
-              class="w-full bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-colors shadow-lg shadow-red-500/30"
+              class="bg-primary text-white px-5 py-2.5 rounded-2xl text-sm font-bold flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/25"
+              (click)="abrirModal()"
             >
-              Ver Detalles
+              <span class="material-symbols-outlined text-sm">person_add</span> Nuevo Miembro
             </button>
           </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div
+              *ngFor="let persona of listaPersonal()"
+              class="bg-white p-5 rounded-[2rem] shadow-sm border border-slate-100 flex items-center gap-4 hover:border-primary/30 transition-colors group"
+            >
+              <div
+                class="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 overflow-hidden border border-slate-100"
+              >
+                <img
+                  *ngIf="persona.foto_perfil"
+                  [src]="persona.foto_perfil"
+                  class="w-full h-full object-cover"
+                />
+                <span *ngIf="!persona.foto_perfil" class="material-symbols-outlined text-3xl"
+                  >account_circle</span
+                >
+              </div>
+              <div class="flex-grow">
+                <h4 class="font-bold text-slate-800 group-hover:text-primary transition-colors">
+                  {{ persona.nombre_completo }}
+                </h4>
+                <p class="text-xs font-medium text-slate-400 uppercase tracking-tighter">
+                  {{ persona.cargo }}
+                </p>
+              </div>
+              <div class="flex flex-col items-end gap-2">
+                <span
+                  [class]="
+                    persona.activo ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                  "
+                  class="text-[10px] px-2 py-1 rounded-lg font-black uppercase"
+                >
+                  {{ persona.activo ? 'Activo' : 'Baja' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECCIÓN DE RESEÑAS RECIENTES -->
+        <section>
+          <div class="flex items-center gap-2 mb-6 px-2">
+            <span class="material-symbols-outlined text-yellow-500">reviews</span>
+            <h3 class="text-xl font-black text-slate-800">Reseñas Recientes</h3>
+          </div>
+
+          <div *ngIf="listaReviews().length === 0" class="bg-white p-10 rounded-[2rem] text-center border border-slate-100">
+            <p class="text-slate-400 font-bold italic">Aún no tienes reseñas de clientes.</p>
+          </div>
+
+          <div class="grid grid-cols-1 gap-4">
+            <div *ngFor="let review of listaReviews()" class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 hover:border-yellow-200 transition-colors">
+              <div class="flex justify-between items-start mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                    <span class="material-symbols-outlined">person</span>
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-slate-800">{{ review.cliente }}</h4>
+                    <p class="text-[10px] text-slate-400 uppercase font-black">{{ review.fecha | date:'dd MMM yyyy' }}</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1 bg-yellow-50 px-3 py-1 rounded-full">
+                  <span class="text-yellow-600 font-black text-sm">{{ review.puntuacion }}</span>
+                  <span class="material-symbols-outlined text-yellow-500 text-sm">star</span>
+                </div>
+              </div>
+              <p class="text-sm text-slate-600 font-medium italic">"{{ review.comentario || 'Sin comentario' }}"</p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="space-y-6">
+        <div class="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100">
+          <h3 class="text-lg font-black text-slate-800 mb-6 flex items-center gap-2">
+            <span class="material-symbols-outlined text-red-500">notifications_active</span>
+            Alertas Recientes
+          </h3>
+
+          <div
+            *ngIf="emergenciasPendientes().length === 0"
+            class="flex flex-col items-center justify-center py-10 text-center"
+          >
+            <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+              <span class="material-symbols-outlined text-slate-200 text-4xl">check_circle</span>
+            </div>
+            <h4 class="text-slate-700 font-bold italic">Todo despejado</h4>
+          </div>
+
+          <div *ngIf="emergenciasPendientes().length > 0" class="space-y-4">
+            <div
+              *ngFor="let emer of emergenciasPendientes()"
+              class="bg-red-50 border border-red-100 p-4 rounded-2xl relative overflow-hidden group"
+            >
+              <div
+                class="absolute top-0 right-0 bg-red-500 text-white text-[9px] font-black uppercase px-2 py-1 rounded-bl-lg"
+              >
+                NUEVA
+              </div>
+              <h4 class="font-black text-red-900 mb-1">Vehículo: {{ emer.vehiculo }}</h4>
+              <p class="text-sm text-red-800/80 font-medium mb-2">{{ emer.descripcion }}</p>
+              <button
+                (click)="abrirDetalleEmergencia(emer)"
+                class="w-full bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-colors shadow-lg shadow-red-500/30"
+              >
+                Ver Detalles
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </ng-template>
 </div>
 
 <!-- Modal Registrar Personal (RESTAURADO EXACTAMENTE) -->
