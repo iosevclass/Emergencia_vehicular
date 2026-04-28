@@ -132,26 +132,35 @@ class _MisEmergenciasScreenState extends State<MisEmergenciasScreen> {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    // Aquí llamas a tu backend POST /calificaciones
-                    print(
-                      'Enviando calificación de $ratingSeleccionado al taller ${emer['id_taller']}',
-                    );
-                    // await _emergenciaService.calificarTaller(emer['id_taller'], emer['id'], ratingSeleccionado);
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('¡Gracias por tu calificación!'),
-                      ),
-                    );
+                  onPressed: () async {
+                    try {
+                      await _emergenciaService.calificarEmergencia(
+                        emer['nro'],
+                        ratingSeleccionado,
+                        comentarioController.text,
+                      );
+                      if (mounted) {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('¡Gracias por tu calificación!'),
+                          ),
+                        );
+                        _cargarEmergencias();
+                      }
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error: ${e.toString()}')),
+                        );
+                      }
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
                   ),
-                  child: const Text(
-                    'Enviar',
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  child: const Text('Enviar'),
                 ),
               ],
             );

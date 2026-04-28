@@ -116,6 +116,8 @@ class TallerResponse(BaseModel):
     ciudad: str
     direccion: str
     foto_perfil: Optional[str] = None
+    latitud: Optional[float] = 0.0
+    longitud: Optional[float] = 0.0
     
     class Config:
         from_attributes = True

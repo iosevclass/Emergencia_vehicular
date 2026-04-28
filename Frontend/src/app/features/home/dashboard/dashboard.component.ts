@@ -35,6 +35,9 @@ export class DashboardComponent implements OnInit {
   tallerLat: number = 0;
   tallerLon: number = 0;
   serviciosPendientes: number = 0;
+  promedioCalificacion = signal<number>(0);
+  totalVotos = signal<number>(0);
+  listaReviews = signal<any[]>([]);
   mostrarModal = signal<boolean>(false);
 
   personalForm: FormGroup;
@@ -57,12 +60,35 @@ export class DashboardComponent implements OnInit {
     this.cargarDatosPerfil();
     this.cargarPersonal();
     this.cargarEmergenciasPendientes();
+    this.cargarStats();
+    this.cargarReviews();
 
     this.emergenciaWs.emergencias$.subscribe((msg) => {
       if (msg.type === 'NEW_EMERGENCY') {
         this.emergenciasPendientes.update((emergencias) => [msg.data, ...emergencias]);
         this.serviciosPendientes = this.emergenciasPendientes().length;
       }
+    });
+  }
+
+  cargarReviews() {
+    const token = localStorage.getItem('access_token');
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+    this.http.get<any[]>(`${environment.apiUrl}/usuarios/taller/reviews`, { headers }).subscribe({
+      next: (data) => this.listaReviews.set(data),
+      error: (err) => console.error('Error al cargar reseñas:', err)
+    });
+  }
+
+  cargarStats() {
+    const token = localStorage.getItem('access_token');
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+    this.http.get<any>(`${environment.apiUrl}/usuarios/taller/stats`, { headers }).subscribe({
+      next: (data) => {
+        this.promedioCalificacion.set(data.promedio);
+        this.totalVotos.set(data.total);
+      },
+      error: (err) => console.error('Error al cargar stats:', err)
     });
   }
 

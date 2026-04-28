@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 
 from app.core.database import get_db
-from .models import Taller, UserRole, Cliente
+from .models import Taller, UserRole, Cliente, CalificacionTaller
 from .schemas import TallerCreate, ClienteCreate
 from app.modules.bitacora.utils import registrar_evento
 
@@ -263,6 +263,48 @@ y creare en aca routes su end endpoint para subir imagenes y otro para eliminar'
 
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException, status
 from .cloudinary_service import CloudinaryService
+
+from sqlalchemy import func
+
+@router.get("/taller/stats")
+def get_taller_stats(
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    """Devuelve el promedio de calificación y total de votos del taller actual."""
+    if current_user.rol != UserRole.ADMIN_TALLER:
+        raise HTTPException(status_code=403, detail="Solo los administradores de taller pueden ver sus estadísticas")
+    
+    stats = db.query(
+        func.avg(CalificacionTaller.puntuacion).label("promedio"),
+        func.count(CalificacionTaller.id).label("total")
+    ).filter(CalificacionTaller.taller_id == current_user.id).first()
+    
+    return {
+        "promedio": round(stats.promedio or 0.0, 1),
+        "total": stats.total or 0
+    }
+
+@router.get("/taller/reviews")
+def get_taller_reviews(
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    """Devuelve los comentarios y calificaciones recientes del taller."""
+    if current_user.rol != UserRole.ADMIN_TALLER:
+        raise HTTPException(status_code=403, detail="Solo los administradores de taller pueden ver sus reseñas")
+    
+    reviews = db.query(CalificacionTaller).filter(CalificacionTaller.taller_id == current_user.id).order_by(CalificacionTaller.fecha_calificacion.desc()).limit(5).all()
+    
+    return [
+        {
+            "id": r.id,
+            "puntuacion": r.puntuacion,
+            "comentario": r.comentario,
+            "fecha": r.fecha_calificacion.isoformat(),
+            "cliente": r.cliente.nombre if r.cliente else "Anónimo"
+        } for r in reviews
+    ]
 
 @router.post("/upload-image", status_code=status.HTTP_201_CREATED)
 async def upload_image_view(

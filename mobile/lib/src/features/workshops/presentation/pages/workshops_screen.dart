@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domian/workshop_model.dart';
 import '../../../../core/network/workshop_service.dart';
@@ -12,12 +13,48 @@ class WorkshopsScreen extends StatefulWidget {
 
 class _WorkshopsScreenState extends State<WorkshopsScreen> {
   late Future<List<WorkshopModel>> futureWorkshops;
+  Position? _userPosition;
 
   @override
   void initState() {
     super.initState();
-    // Iniciamos la llamada al backend
     futureWorkshops = WorkshopService().getWorkshops();
+    _determinePosition();
+  }
+
+  Future<void> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) return;
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) return;
+    }
+    
+    if (permission == LocationPermission.deniedForever) return;
+
+    final position = await Geolocator.getCurrentPosition();
+    setState(() {
+      _userPosition = position;
+    });
+  }
+
+  String _calculateDistance(double targetLat, double targetLon) {
+    if (_userPosition == null) return "... km";
+    
+    double distanceInMeters = Geolocator.distanceBetween(
+      _userPosition!.latitude,
+      _userPosition!.longitude,
+      targetLat,
+      targetLon,
+    );
+    
+    double distanceInKm = distanceInMeters / 1000;
+    return "${distanceInKm.toStringAsFixed(1)} km";
   }
 
   @override
@@ -126,22 +163,22 @@ class _WorkshopsScreenState extends State<WorkshopsScreen> {
                         const SizedBox(height: 24),
                     itemBuilder: (context, index) {
                       final workshop = workshops[index];
-                      // Unimos ciudad y dirección para mostrarlo bien
                       final ubicacionCompleta =
                           '${workshop.direccion}, ${workshop.ciudad}';
+                      final distancia = _calculateDistance(workshop.latitud, workshop.longitud);
 
                       return _buildWorkshopCard(
                         id: workshop.id,
-                        imageUrl: workshop.fotoPerfil, // Puede ser null
-                        rating:
-                            '4.5', // TODO: Actualizar cuando se agregue a models.py
+                        imageUrl: workshop.fotoPerfil,
+                        rating: '4.5',
                         title: workshop.nombreTaller,
                         location: ubicacionCompleta,
+                        distance: distancia,
                         badges: [
                           _buildBadge(
                             'Mecánica General',
                             AppColors.secondary,
-                          ), // Estático por ahora
+                          ),
                         ],
                       );
                     },
@@ -242,6 +279,7 @@ class _WorkshopsScreenState extends State<WorkshopsScreen> {
     required String rating,
     required String title,
     required String location,
+    required String distance,
     required List<Widget> badges,
   }) {
     return Container(
@@ -289,7 +327,6 @@ class _WorkshopsScreenState extends State<WorkshopsScreen> {
                           color: Colors.grey,
                         ),
                       ),
-                // (Mantén el código del rating aquí arriba a la derecha)
               ],
             ),
           ),
@@ -298,12 +335,36 @@ class _WorkshopsScreenState extends State<WorkshopsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        distance,
+                        style: const TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Row(
@@ -328,34 +389,25 @@ class _WorkshopsScreenState extends State<WorkshopsScreen> {
                 const SizedBox(height: 16),
 
                 // BOTONES
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    TextButton(
-                      onPressed: () {
-                        /* Navegar al perfil del taller */
-                      },
-                      child: const Text(
-                        'Saber más',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      /* Navegar al perfil del taller */
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        print('Iniciar chat con el taller ID: $id');
-                        // Navigator.pushNamed(context, '/chat', arguments: id);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      icon: const Icon(Icons.chat_bubble_outline, size: 16),
-                      label: const Text('Mensaje'),
+                    child: const Text(
+                      'Ver Información del Taller',
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),

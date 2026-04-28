@@ -6,6 +6,8 @@ class WorkshopModel {
   final String? fotoPerfil;
   final double calificacionPromedio;
   final int totalCalificaciones;
+  final double latitud;
+  final double longitud;
 
   WorkshopModel({
     required this.id,
@@ -15,6 +17,8 @@ class WorkshopModel {
     this.fotoPerfil,
     required this.calificacionPromedio,
     required this.totalCalificaciones,
+    required this.latitud,
+    required this.longitud,
   });
 
   factory WorkshopModel.fromJson(Map<String, dynamic> json) {
@@ -26,6 +30,8 @@ class WorkshopModel {
       fotoPerfil: json['foto_perfil'],
       calificacionPromedio: (json['calificacion_promedio'] ?? 0.0).toDouble(),
       totalCalificaciones: json['total_calificaciones'] ?? 0,
+      latitud: (json['latitud'] ?? 0.0).toDouble(),
+      longitud: (json['longitud'] ?? 0.0).toDouble(),
     );
   }
 }
